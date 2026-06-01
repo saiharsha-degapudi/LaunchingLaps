@@ -66,7 +66,7 @@ export default function SPVDetail() {
       api.get(`/spvs/${id}/commitments`),
     ]).then(([spvRes, commitRes]) => {
       if (spvRes.status === 'fulfilled') setSpv(spvRes.value.data)
-      else setError('SPV not found.')
+      else setError('Syndicate not found.')
       if (commitRes.status === 'fulfilled') setCommitments(commitRes.value.data)
     }).finally(() => setLoadingSpv(false))
   }, [id])
@@ -135,8 +135,8 @@ export default function SPVDetail() {
   if (error || !spv) {
     return (
       <div className="text-center py-24">
-        <p className="text-red-500 font-semibold text-lg">{error || 'SPV not found.'}</p>
-        <Link to="/spvs" className="mt-4 inline-block text-brand-700 underline">Back to SPVs</Link>
+        <p className="text-red-500 font-semibold text-lg">{error || 'Syndicate not found.'}</p>
+        <Link to="/spvs" className="mt-4 inline-block text-brand-700 underline">Back to Syndicates</Link>
       </div>
     )
   }
@@ -145,7 +145,7 @@ export default function SPVDetail() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Back */}
       <Link to="/spvs" className="inline-flex items-center gap-1.5 text-brand-700 text-sm font-semibold hover:underline mb-6">
-        ← Back to SPVs
+        ← Back to Syndicates
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -230,7 +230,7 @@ export default function SPVDetail() {
             ) : (
               <p className="text-gray-400 text-sm">
                 Commitment details are visible to the lead investor and backers only.
-                {isInvestor && spv.status === 'forming' && ' Commit to this SPV to see the full list.'}
+                {isInvestor && spv.status === 'forming' && ' Commit to this syndicate to see the full list.'}
               </p>
             )}
           </div>
@@ -241,7 +241,7 @@ export default function SPVDetail() {
 
           {/* SPV Terms */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">SPV Terms</h2>
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Syndicate Terms</h2>
 
             <div className="mb-4">
               <FundingMeter
@@ -290,10 +290,10 @@ export default function SPVDetail() {
             <div className="bg-brand-50 border border-brand-200 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-brand-700 text-lg">🏦</span>
-                <h3 className="font-bold text-brand-800 text-sm">You are leading this SPV</h3>
+                <h3 className="font-bold text-brand-800 text-sm">You are leading this Syndicate</h3>
               </div>
               <p className="text-brand-600 text-xs leading-relaxed">
-                As the lead investor you earn {spv.carry_pct}% carry on returns. Share this SPV link with co-investors to fill your round.
+                As the lead investor you earn {spv.carry_pct}% carry on returns. Share this syndicate link with co-investors to fill your round.
               </p>
             </div>
           )}
@@ -301,7 +301,7 @@ export default function SPVDetail() {
           {canCommit && (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
               <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
-                {myCommitment ? 'Your Commitment' : 'Commit to this SPV'}
+                {myCommitment ? 'Your Commitment' : 'Commit to this Syndicate'}
               </h2>
 
               {myCommitment ? (
@@ -346,7 +346,7 @@ export default function SPVDetail() {
                     disabled={loadingCommit}
                     className="w-full bg-brand-800 hover:bg-brand-700 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 text-sm"
                   >
-                    {loadingCommit ? 'Submitting…' : 'Commit to SPV →'}
+                    {loadingCommit ? 'Submitting…' : 'Commit →'}
                   </button>
                 </form>
               )}
@@ -366,7 +366,7 @@ export default function SPVDetail() {
                 pctFunded={spv.pct_funded}
               />
               <div className="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 leading-relaxed">
-                Share this SPV page with potential investors to accelerate your funding round.
+                Share this syndicate page with potential investors to accelerate your funding round.
               </div>
             </div>
           )}

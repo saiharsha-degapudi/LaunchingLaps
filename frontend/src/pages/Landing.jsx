@@ -4,21 +4,21 @@ import ScrollingBanner from '../components/ScrollingBanner'
 import AdCarousel from '../components/AdCarousel'
 
 const TICKER_ITEMS = [
-  '🚀 500+ Entrepreneurs already funded',
-  '💼 200+ Verified US Investors',
+  '🚀 500+ Founders already funded globally',
+  '💼 200+ Verified Investors worldwide',
   '📚 50+ Business Courses',
-  '🌍 Connect globally, invest locally',
+  '🌍 Entrepreneurs from 60+ countries',
   '🔥 New pitches added every day',
   '🎓 Free business education for all members',
   '⚡ Fast-track your funding journey',
-  '🤝 Trusted by entrepreneurs in 40+ countries',
+  '🤝 Trusted by investors in 30+ countries',
 ]
 
 const HOW_IT_WORKS_ENTREPRENEUR = [
   { step: '01', title: 'Create Your Profile', desc: 'Sign up as an entrepreneur and tell us about your startup — industry, stage, and vision.' },
   { step: '02', title: 'Submit Your Pitch', desc: 'Upload your pitch with funding goals, deck link, and business overview.' },
   { step: '03', title: 'Get Discovered', desc: 'US investors browse and filter pitches. Get notified when someone expresses interest.' },
-  { step: '04', title: 'Close the Deal', desc: 'Connect directly, negotiate terms, and launch your business with US backing.' },
+  { step: '04', title: 'Close the Deal', desc: 'Connect directly, negotiate terms, and close your deal with global investor backing.' },
 ]
 
 const HOW_IT_WORKS_INVESTOR = [
@@ -33,7 +33,7 @@ const TESTIMONIALS = [
     name: 'Priya Sharma',
     role: 'Founder, MediReach',
     avatar: '👩‍💼',
-    quote: 'LaunchingLaps helped me connect with 3 US investors in my first week. The platform is incredibly easy to use and the education courses gave me the confidence to pitch professionally.',
+    quote: 'LaunchingLaps helped me connect with 3 global investors in my first week. The platform is incredibly easy to use and the education courses gave me the confidence to pitch professionally.',
   },
   {
     name: 'James Okafor',
@@ -72,9 +72,6 @@ export default function Landing() {
   return (
     <div className="flex flex-col">
 
-      {/* Scrolling ticker */}
-      <ScrollingBanner items={TICKER_ITEMS} bgColor="bg-brand-900" textColor="text-gold-400" speed={35} />
-
       {/* Auto-scrolling Ad Carousel */}
       <AdCarousel />
 
@@ -90,29 +87,29 @@ export default function Landing() {
           </span>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
-            Where Great Ideas{' '}
+            Where Ambitious Ideas{' '}
             <span className="bg-gradient-to-r from-gold-400 to-yellow-300 bg-clip-text text-transparent">
-              Meet US Capital
+              Meet Global Capital
             </span>
           </h1>
 
           <p className="text-blue-200 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            LaunchingLaps lets entrepreneurs raise from groups of US investors through a single SPV — clean cap table, faster close, global reach.
+            LaunchingLaps connects entrepreneurs worldwide with global investors through structured investment syndicates — raise smarter, invest together, grow faster.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
             <Link to="/register" className="bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black text-base px-10 py-4 rounded-xl transition-all shadow-lg shadow-gold-500/30 hover:scale-105">
-              🚀 Raise via SPV
+              🚀 Raise Funding
             </Link>
             <Link to="/register" state={{ defaultRole: 'investor' }}
               className="bg-white/10 backdrop-blur border-2 border-white/30 hover:bg-white/20 text-white font-black text-base px-10 py-4 rounded-xl transition-all hover:scale-105">
-              💼 Invest via SPV
+              💼 Invest in Startups
             </Link>
           </div>
 
           {/* Stats bar */}
           <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
-            {[['500+', 'Entrepreneurs'], ['200+', 'US Investors'], ['$12M+', 'Raised']].map(([v, l]) => (
+            {[['500+', 'Founders'], ['200+', 'Global Investors'], ['$12M+', 'Deployed']].map(([v, l]) => (
               <div key={l} className="bg-white/10 backdrop-blur rounded-2xl py-4 border border-white/10">
                 <p className="text-2xl sm:text-3xl font-black text-gold-400">{v}</p>
                 <p className="text-blue-300 text-xs sm:text-sm mt-1">{l}</p>
@@ -182,9 +179,9 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { emoji: '🏦', title: 'SPV Formation', desc: 'Investors pool capital into one legal entity that invests in your startup. You get one cap table entry, not 20.', color: 'from-blue-500 to-brand-700' },
-              { emoji: '🎯', title: 'Lead an SPV', desc: 'Experienced investors lead SPVs, earn carried interest, and build a portfolio with smaller individual checks.', color: 'from-gold-400 to-orange-500' },
-              { emoji: '✅', title: 'Clean Cap Table', desc: 'Founders keep equity management simple. One SPV = one investor on your cap table, no matter how many backers.', color: 'from-green-400 to-teal-500' },
+              { emoji: '🏦', title: 'Investment Syndicates', desc: 'Pool capital from multiple investors into a single legal entity. Founders get one clean cap table entry — simple, fast, professional.', color: 'from-blue-500 to-brand-700' },
+              { emoji: '🎯', title: 'Lead a Syndicate', desc: 'Experienced investors lead syndicates, earn carried interest, and build a portfolio with smaller individual checks.', color: 'from-gold-400 to-orange-500' },
+              { emoji: '✅', title: 'Clean Cap Table', desc: 'Founders keep equity management simple. One syndicate = one investor on your cap table, no matter how many backers.', color: 'from-green-400 to-teal-500' },
               { emoji: '💬', title: 'Community Forum', desc: 'Ask questions, share wins, and learn from a global community of entrepreneurs.', color: 'from-purple-400 to-pink-500' },
               { emoji: '📨', title: 'Direct Messaging', desc: 'Secure, private conversations between founders and investors — right on the platform.', color: 'from-red-400 to-rose-500' },
               { emoji: '📊', title: 'Deal Dashboard', desc: 'Track expressions of interest, manage follow-ups, and close deals faster.', color: 'from-brand-500 to-cyan-500' },
@@ -208,7 +205,7 @@ export default function Landing() {
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <h2 className="text-4xl font-black text-white mb-4 drop-shadow">Your next chapter starts here.</h2>
           <p className="text-yellow-100 text-lg mb-8">
-            Join LaunchingLaps free today — submit your first pitch or discover your next investment in minutes.
+            Join LaunchingLaps free — submit your pitch to global investors or discover your next investment opportunity in minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/register" className="bg-brand-800 hover:bg-brand-700 text-white font-black px-10 py-4 rounded-xl transition shadow-xl hover:scale-105">

@@ -34,9 +34,9 @@ export default function Navbar() {
               <>
                 <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
                 <NavLink to="/pitches" className={linkClass}>Pitches</NavLink>
-                <NavLink to="/spvs" className={linkClass}>SPVs</NavLink>
+                <NavLink to="/spvs" className={linkClass}>Syndicates</NavLink>
                 {user?.role === 'investor' && (
-                  <NavLink to="/lead-spv" className={linkClass}>Lead SPV</NavLink>
+                  <NavLink to="/lead-spv" className={linkClass}>Create Syndicate</NavLink>
                 )}
                 <NavLink to="/investors" className={linkClass}>Investors</NavLink>
                 <NavLink to="/education" className={linkClass}>Learn</NavLink>
@@ -86,9 +86,9 @@ export default function Navbar() {
             <>
               <NavLink to="/dashboard" className={linkClass} onClick={() => setMobileOpen(false)}>Dashboard</NavLink>
               <NavLink to="/pitches" className={linkClass} onClick={() => setMobileOpen(false)}>Pitches</NavLink>
-              <NavLink to="/spvs" className={linkClass} onClick={() => setMobileOpen(false)}>SPVs</NavLink>
+              <NavLink to="/spvs" className={linkClass} onClick={() => setMobileOpen(false)}>Syndicates</NavLink>
               {user?.role === 'investor' && (
-                <NavLink to="/lead-spv" className={linkClass} onClick={() => setMobileOpen(false)}>Lead SPV</NavLink>
+                <NavLink to="/lead-spv" className={linkClass} onClick={() => setMobileOpen(false)}>Create Syndicate</NavLink>
               )}
               <NavLink to="/investors" className={linkClass} onClick={() => setMobileOpen(false)}>Investors</NavLink>
               <NavLink to="/education" className={linkClass} onClick={() => setMobileOpen(false)}>Learn</NavLink>

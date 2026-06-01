@@ -43,7 +43,7 @@ export default function LeadSPV() {
     setForm(f => ({
       ...f,
       pitch_id: pitchId,
-      title: selected ? `${selected.title} SPV I` : f.title,
+      title: selected ? `${selected.title} Syndicate I` : f.title,
     }))
   }
 
@@ -56,7 +56,7 @@ export default function LeadSPV() {
     e.preventDefault()
     setError('')
     if (!form.pitch_id) { setError('Please select a pitch.'); return }
-    if (!form.title.trim()) { setError('SPV title is required.'); return }
+    if (!form.title.trim()) { setError('Syndicate title is required.'); return }
     if (!form.target_amount || parseFloat(form.target_amount) <= 0) { setError('Target amount must be greater than 0.'); return }
 
     const payload = {
@@ -75,7 +75,7 @@ export default function LeadSPV() {
       const res = await api.post('/spvs/', payload)
       navigate(`/spvs/${res.data.id}`)
     } catch (err) {
-      setError(err.response?.data?.detail ?? 'Failed to create SPV. Please try again.')
+      setError(err.response?.data?.detail ?? 'Failed to create syndicate. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -84,7 +84,7 @@ export default function LeadSPV() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-brand-800">Lead a New SPV</h1>
+        <h1 className="text-3xl font-black text-brand-800">Create a New Syndicate</h1>
         <p className="text-gray-500 text-sm mt-1">Pool co-investor capital and earn carried interest on returns.</p>
       </div>
 
@@ -123,14 +123,14 @@ export default function LeadSPV() {
             {/* SPV Title */}
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1.5">
-                SPV Title <span className="text-red-400">*</span>
+                Syndicate Title <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 name="title"
                 value={form.title}
                 onChange={handleChange}
-                placeholder="e.g. EcoDeliver SPV I"
+                placeholder="e.g. EcoDeliver Syndicate I"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
                 required
               />
@@ -245,7 +245,7 @@ export default function LeadSPV() {
               disabled={submitting}
               className="w-full bg-brand-800 hover:bg-brand-700 text-white font-black py-3.5 rounded-xl transition-colors disabled:opacity-50 text-sm tracking-wide"
             >
-              {submitting ? 'Creating SPV…' : 'Create SPV & Start Fundraising →'}
+              {submitting ? 'Creating…' : 'Create Syndicate & Start Fundraising →'}
             </button>
           </form>
         </div>
@@ -255,11 +255,11 @@ export default function LeadSPV() {
           {/* What is an SPV */}
           <div className="bg-brand-800 text-white rounded-2xl p-6">
             <div className="text-3xl mb-3">🏦</div>
-            <h3 className="font-black text-lg mb-3">What is an SPV?</h3>
+            <h3 className="font-black text-lg mb-3">What is a Syndicate?</h3>
             <p className="text-blue-200 text-sm leading-relaxed">
-              A Special Purpose Vehicle (SPV) is a single legal entity created to make one investment.
-              Multiple investors pool capital into the SPV, which holds shares in the startup.
-              The startup gets one clean cap table entry — not 20 individual investors.
+              A syndicate is a group of investors who pool capital together to make a single investment.
+              Each member commits capital, which flows through one legal vehicle into the startup.
+              The founder gets one clean cap table entry instead of dozens.
             </p>
           </div>
 
@@ -269,7 +269,7 @@ export default function LeadSPV() {
             <ul className="space-y-3">
               {[
                 { icon: '💰', title: 'Earned Carry', desc: 'Receive a % of profits (typically 20%) when the investment exits.' },
-                { icon: '🎯', title: 'Deal Flow Control', desc: 'You choose which startups to back and set the SPV terms.' },
+                { icon: '🎯', title: 'Deal Flow Control', desc: 'You choose which startups to back and set the syndicate terms.' },
                 { icon: '👥', title: 'Build Your Network', desc: 'Invite co-investors and grow your reputation as a deal lead.' },
                 { icon: '📊', title: 'Track Record', desc: 'Build a verifiable investment history to attract future LPs.' },
               ].map(item => (
@@ -286,12 +286,12 @@ export default function LeadSPV() {
 
           {/* Terms reminder */}
           <div className="bg-gold-50 border border-gold-200 rounded-2xl p-5">
-            <h3 className="font-bold text-gold-800 text-sm mb-2">Standard SPV Terms</h3>
+            <h3 className="font-bold text-gold-800 text-sm mb-2">Standard Syndicate Terms</h3>
             <ul className="text-gold-700 text-xs space-y-1.5">
               <li>• Carry: 20% of profits (industry standard)</li>
               <li>• Management Fee: 2%/yr of committed capital</li>
               <li>• Min Check: $5,000–$25,000 typical</li>
-              <li>• All investors must be accredited (US)</li>
+              <li>• Investors join from any country</li>
             </ul>
           </div>
         </div>

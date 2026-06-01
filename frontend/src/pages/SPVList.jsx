@@ -40,7 +40,7 @@ export default function SPVList() {
     const url = activeTab ? `/spvs/?status=${activeTab}` : '/spvs/'
     api.get(url)
       .then(r => setSpvs(r.data))
-      .catch(() => setError('Failed to load SPVs. Please try again.'))
+      .catch(() => setError('Failed to load syndicates. Please try again.'))
       .finally(() => setLoading(false))
   }, [activeTab])
 
@@ -57,12 +57,12 @@ export default function SPVList() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-black text-brand-800">
-            {isEntrepreneur ? 'SPVs Funding Your Pitch' : 'Active SPV Opportunities'}
+            {isEntrepreneur ? 'Syndicates Funding Your Pitch' : 'Active Syndicate Opportunities'}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             {isEntrepreneur
-              ? 'Investors can pool capital through an SPV to back your startup.'
-              : 'Join or lead an SPV to invest in high-potential startups.'}
+              ? 'Investors can pool capital through a syndicate to back your startup.'
+              : 'Join or create a syndicate to invest in high-potential startups.'}
           </p>
         </div>
         {isInvestor && (
@@ -70,7 +70,7 @@ export default function SPVList() {
             to="/lead-spv"
             className="flex-shrink-0 bg-gold-500 hover:bg-gold-600 text-white font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
           >
-            + Lead New SPV
+            + Create Syndicate
           </Link>
         )}
       </div>
@@ -110,14 +110,14 @@ export default function SPVList() {
       ) : visibleSpvs.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
           <div className="text-5xl mb-4">🏦</div>
-          <h3 className="text-xl font-black text-brand-800 mb-2">No SPVs found</h3>
+          <h3 className="text-xl font-black text-brand-800 mb-2">No syndicates found</h3>
           {isEntrepreneur ? (
             <p className="text-gray-500 text-sm max-w-md mx-auto">
-              Investors can form an SPV to fund your startup. Submit a pitch to get started.
+              Investors can form a syndicate to fund your startup. Submit a pitch to get started.
             </p>
           ) : (
             <p className="text-gray-500 text-sm max-w-md mx-auto">
-              No SPVs match the current filter. Try another tab or lead a new SPV.
+              No syndicates match the current filter. Try another tab or create a new one.
             </p>
           )}
           {isInvestor && (
@@ -125,7 +125,7 @@ export default function SPVList() {
               to="/lead-spv"
               className="inline-block mt-6 bg-gold-500 hover:bg-gold-600 text-white font-bold px-6 py-3 rounded-xl transition-colors"
             >
-              + Lead the First SPV
+              + Create the First Syndicate
             </Link>
           )}
         </div>

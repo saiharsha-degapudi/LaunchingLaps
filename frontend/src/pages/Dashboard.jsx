@@ -7,21 +7,21 @@ import SPVCard from '../components/SPVCard'
 
 // ── Entrepreneur-only ads & content ──────────────────────────────────────────
 const ENTREPRENEUR_ADS = [
-  '🚀 New: Get your pitch reviewed by a US investor mentor — Book now',
-  '📚 Free Course: "How to Register a Business in the USA" — Enroll today',
-  '💡 Tip: Startups with video pitches get 3x more investor views',
+  '🚀 New: Get your pitch reviewed by an investor mentor — Book now',
+  '📚 Free Course: "How to Register Your Business for Global Investors" — Enroll today',
+  '💡 Tip: Pitches with video introductions get 3× more investor views',
   '🎯 Funding Alert: 12 new investors added this week matching your sector',
-  '🏆 Success Story: EcoDeliver raised $500k — Read how they did it',
+  '🏆 Success Story: EcoDeliver raised $500K through a LaunchingLaps syndicate',
   '📝 Template: Download our winning pitch deck template — Free for members',
   '⚡ Feature: Add a video intro to your pitch — Stand out instantly',
-  '🌍 Webinar: "Pitching to US Investors 101" — This Friday, Free to join',
+  '🌍 Webinar: "Pitching to Global Investors 101" — This Friday, Free to join',
 ]
 
 const ENTREPRENEUR_TIPS = [
   { emoji: '📋', title: 'Perfect Your Pitch', desc: 'US investors spend on average 3 minutes on a pitch. Lead with your problem statement and traction metrics.', tag: 'Pitch Tips' },
   { emoji: '💵', title: 'Know Your Numbers', desc: 'Always have your CAC, LTV, MRR, and burn rate ready. Investors will ask, so be prepared.', tag: 'Finance 101' },
   { emoji: '🤝', title: 'Warm Introductions Win', desc: 'A warm intro from a mutual connection increases your reply rate from investors by over 400%.', tag: 'Networking' },
-  { emoji: '🌐', title: 'US Market Entry', desc: 'Most US investors want a Delaware C-Corp. Consider forming one before you start fundraising.', tag: 'Legal Tip' },
+  { emoji: '🌐', title: 'Structure Your Business', desc: 'Investors globally look for clear legal structures. Consider setting up an entity in a jurisdiction that suits your investor base.', tag: 'Legal Tip' },
 ]
 
 const ENTREPRENEUR_QUICK_LINKS = [
@@ -159,7 +159,7 @@ export default function Dashboard() {
                   Welcome back, {user?.full_name?.split(' ')[0]}! 🚀
                 </h1>
                 <p className="text-blue-200 text-sm">
-                  You're on your way to connecting with US investors. Keep building!
+                  You're on your way to connecting with global investors. Keep building!
                 </p>
               </div>
               <Link to="/submit-pitch"
@@ -172,7 +172,7 @@ export default function Dashboard() {
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <StatCard label="Active Pitches" value={stats.pitches} emoji="📋" gradient="from-brand-600 to-brand-800" />
-            <StatCard label="Available Investors" value={stats.investors} emoji="💼" gradient="from-gold-400 to-orange-500" />
+            <StatCard label="Global Investors" value={stats.investors} emoji="💼" gradient="from-gold-400 to-orange-500" />
             <StatCard label="Courses Available" value={stats.courses} emoji="🎓" gradient="from-green-500 to-teal-600" />
             <StatCard label="Community Posts" value={stats.posts} emoji="💬" gradient="from-purple-500 to-pink-600" />
           </div>
@@ -189,15 +189,15 @@ export default function Dashboard() {
             return (
               <div className="mb-10">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-black text-brand-800">SPV Activity on Your Pitches</h2>
+                  <h2 className="text-xl font-black text-brand-800">Syndicate Activity on Your Pitches</h2>
                   <Link to="/spvs" className="text-brand-700 text-sm font-semibold hover:underline">View all →</Link>
                 </div>
                 {mySpvs.length === 0 ? (
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
                     <div className="text-4xl mb-3">🏦</div>
-                    <p className="font-bold text-brand-800 mb-1">No SPVs yet</p>
+                    <p className="font-bold text-brand-800 mb-1">No syndicates yet</p>
                     <p className="text-gray-500 text-sm max-w-md mx-auto">
-                      Investors can form an SPV to fund your startup. Submit a pitch to get started.
+                      Investors can form a syndicate to fund your startup. Submit a pitch to get started.
                     </p>
                     <Link to="/submit-pitch" className="inline-block mt-4 bg-brand-800 hover:bg-brand-700 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
                       Submit a Pitch →
@@ -284,18 +284,18 @@ export default function Dashboard() {
         {/* SPVs Forming Now */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black text-brand-800">SPVs Forming Now — Join or Lead</h2>
+            <h2 className="text-xl font-black text-brand-800">Syndicates Forming Now — Join or Lead</h2>
             <div className="flex items-center gap-4">
-              <Link to="/spvs" className="text-gold-600 text-sm font-semibold hover:underline">View All SPVs →</Link>
+              <Link to="/spvs" className="text-gold-600 text-sm font-semibold hover:underline">View All Syndicates →</Link>
             </div>
           </div>
           {spvs.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
               <div className="text-4xl mb-3">🏦</div>
-              <p className="font-bold text-brand-800 mb-1">No SPVs forming right now</p>
-              <p className="text-gray-500 text-sm mb-4">Be the first to lead an SPV and start earning carry.</p>
+              <p className="font-bold text-brand-800 mb-1">No syndicates forming right now</p>
+              <p className="text-gray-500 text-sm mb-4">Be the first to lead a syndicate and start earning carry.</p>
               <Link to="/lead-spv" className="inline-block bg-gold-500 hover:bg-gold-600 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
-                + Lead New SPV
+                + Create Syndicate
               </Link>
             </div>
           ) : (
@@ -304,7 +304,7 @@ export default function Dashboard() {
                 {spvs.slice(0, 4).map(s => <SPVCard key={s.id} spv={s} />)}
               </div>
               <Link to="/lead-spv" className="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-bold px-5 py-2.5 rounded-xl transition-colors text-sm">
-                + Lead New SPV
+                + Create Syndicate
               </Link>
             </>
           )}

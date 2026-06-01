@@ -112,7 +112,7 @@ export default function SPVCard({ spv }) {
           to={`/spvs/${spv.id}`}
           className="block w-full text-center bg-brand-800 hover:bg-brand-700 text-white text-sm font-bold py-2.5 rounded-xl transition-colors"
         >
-          View SPV →
+          View Syndicate →
         </Link>
       </div>
     </div>
