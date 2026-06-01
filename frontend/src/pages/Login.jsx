@@ -39,14 +39,16 @@ export default function Login() {
       password: 'password123',
       color: 'bg-brand-800 hover:bg-brand-700',
       icon: '🚀',
+      desc: 'EcoDeliver · Green Tech Founder',
     },
     {
       role: 'Investor',
-      name: 'Sarah Green',
+      name: 'Sarah Williams',
       email: 'sarah@greencap.vc',
       password: 'password123',
       color: 'bg-gold-500 hover:bg-gold-600',
       icon: '💼',
+      desc: 'GreenCap Ventures · Partner',
     },
   ]
 
@@ -81,7 +83,8 @@ export default function Login() {
               >
                 <div className="text-2xl mb-1">{acc.icon}</div>
                 <div className="font-bold text-sm">{acc.role}</div>
-                <div className="text-xs opacity-80">{acc.name}</div>
+                <div className="text-xs font-semibold opacity-90">{acc.name}</div>
+                <div className="text-xs opacity-70 mt-0.5">{acc.desc}</div>
               </button>
             ))}
           </div>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import ScrollingBanner from '../components/ScrollingBanner'
+import AdCarousel from '../components/AdCarousel'
 
 const TICKER_ITEMS = [
   '🚀 500+ Entrepreneurs already funded',
@@ -73,6 +74,9 @@ export default function Landing() {
 
       {/* Scrolling ticker */}
       <ScrollingBanner items={TICKER_ITEMS} bgColor="bg-brand-900" textColor="text-gold-400" speed={35} />
+
+      {/* Auto-scrolling Ad Carousel */}
+      <AdCarousel />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-blue-900 text-white py-28 px-4">
