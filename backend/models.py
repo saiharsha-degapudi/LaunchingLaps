@@ -38,6 +38,8 @@ class User(Base):
     community_posts = relationship("CommunityPost", back_populates="author")
     sent_messages = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender")
     received_messages = relationship("Message", foreign_keys="Message.receiver_id", back_populates="receiver")
+    led_spvs = relationship("SPV", foreign_keys="SPV.lead_investor_id", back_populates="lead_investor")
+    spv_commitments = relationship("SPVCommitment", back_populates="investor")
 
 
 class Pitch(Base):
@@ -164,3 +166,45 @@ class Message(Base):
 
     sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_messages")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_messages")
+
+
+class SPVStatus(str, enum.Enum):
+    forming = "forming"
+    active = "active"
+    closed = "closed"
+
+
+class SPV(Base):
+    __tablename__ = "spvs"
+
+    id               = Column(Integer, primary_key=True, index=True)
+    pitch_id         = Column(Integer, ForeignKey("pitches.id"), nullable=False)
+    lead_investor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title            = Column(String, nullable=False)
+    description      = Column(Text, nullable=True)
+    target_amount    = Column(Float, nullable=False)
+    committed_amount = Column(Float, nullable=False, default=0.0)
+    carry_pct        = Column(Float, nullable=False, default=20.0)
+    mgmt_fee_pct     = Column(Float, nullable=False, default=2.0)
+    min_check        = Column(Float, nullable=False, default=5000.0)
+    deadline         = Column(DateTime(timezone=True), nullable=True)
+    status           = Column(SAEnum(SPVStatus), default=SPVStatus.forming)
+    created_at       = Column(DateTime(timezone=True), server_default=func.now())
+
+    pitch         = relationship("Pitch")
+    lead_investor = relationship("User", foreign_keys=[lead_investor_id])
+    commitments   = relationship("SPVCommitment", back_populates="spv")
+
+
+class SPVCommitment(Base):
+    __tablename__ = "spv_commitments"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    spv_id      = Column(Integer, ForeignKey("spvs.id"), nullable=False)
+    investor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    amount      = Column(Float, nullable=False)
+    status      = Column(String, nullable=False, default="committed")
+    created_at  = Column(DateTime(timezone=True), server_default=func.now())
+
+    spv      = relationship("SPV", back_populates="commitments")
+    investor = relationship("User")

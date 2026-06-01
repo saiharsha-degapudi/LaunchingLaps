@@ -15,6 +15,9 @@ import Education from './pages/Education'
 import CourseDetail from './pages/CourseDetail'
 import Community from './pages/Community'
 import Messages from './pages/Messages'
+import SPVList from './pages/SPVList'
+import SPVDetail from './pages/SPVDetail'
+import LeadSPV from './pages/LeadSPV'
 
 export default function App() {
   return (
@@ -40,6 +43,9 @@ export default function App() {
                 <Route path="/education/:id" element={<CourseDetail />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/messages" element={<Messages />} />
+                <Route path="/spvs" element={<SPVList />} />
+                <Route path="/spvs/:id" element={<SPVDetail />} />
+                <Route path="/lead-spv" element={<LeadSPV />} />
               </Route>
 
               {/* Fallback */}

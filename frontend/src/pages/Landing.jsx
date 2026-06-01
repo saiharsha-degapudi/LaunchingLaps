@@ -97,17 +97,16 @@ export default function Landing() {
           </h1>
 
           <p className="text-blue-200 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            LaunchingLaps is the fastest-growing platform connecting global entrepreneurs with
-            accredited US investors — plus the business education to help you succeed.
+            LaunchingLaps lets entrepreneurs raise from groups of US investors through a single SPV — clean cap table, faster close, global reach.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
             <Link to="/register" className="bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black text-base px-10 py-4 rounded-xl transition-all shadow-lg shadow-gold-500/30 hover:scale-105">
-              🚀 Join as Entrepreneur
+              🚀 Raise via SPV
             </Link>
             <Link to="/register" state={{ defaultRole: 'investor' }}
               className="bg-white/10 backdrop-blur border-2 border-white/30 hover:bg-white/20 text-white font-black text-base px-10 py-4 rounded-xl transition-all hover:scale-105">
-              💼 Join as Investor
+              💼 Invest via SPV
             </Link>
           </div>
 
@@ -183,9 +182,9 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { emoji: '📋', title: 'Smart Pitch Builder', desc: 'Structured templates that match what US investors actually want to see.', color: 'from-blue-500 to-brand-700' },
-              { emoji: '🔍', title: 'Investor Matching', desc: 'AI-powered matching connects you with investors who fund your industry and stage.', color: 'from-gold-400 to-orange-500' },
-              { emoji: '🎓', title: 'Business Education', desc: '50+ expert courses on US market entry, fundraising, legal basics, and scaling.', color: 'from-green-400 to-teal-500' },
+              { emoji: '🏦', title: 'SPV Formation', desc: 'Investors pool capital into one legal entity that invests in your startup. You get one cap table entry, not 20.', color: 'from-blue-500 to-brand-700' },
+              { emoji: '🎯', title: 'Lead an SPV', desc: 'Experienced investors lead SPVs, earn carried interest, and build a portfolio with smaller individual checks.', color: 'from-gold-400 to-orange-500' },
+              { emoji: '✅', title: 'Clean Cap Table', desc: 'Founders keep equity management simple. One SPV = one investor on your cap table, no matter how many backers.', color: 'from-green-400 to-teal-500' },
               { emoji: '💬', title: 'Community Forum', desc: 'Ask questions, share wins, and learn from a global community of entrepreneurs.', color: 'from-purple-400 to-pink-500' },
               { emoji: '📨', title: 'Direct Messaging', desc: 'Secure, private conversations between founders and investors — right on the platform.', color: 'from-red-400 to-rose-500' },
               { emoji: '📊', title: 'Deal Dashboard', desc: 'Track expressions of interest, manage follow-ups, and close deals faster.', color: 'from-brand-500 to-cyan-500' },

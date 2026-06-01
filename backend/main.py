@@ -12,7 +12,7 @@ from auth import (
     get_current_user,
     get_user_by_email,
 )
-from routers import pitches, investors, education, community
+from routers import pitches, investors, education, community, spvs
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
@@ -37,6 +37,7 @@ app.include_router(pitches.router)
 app.include_router(investors.router)
 app.include_router(education.router)
 app.include_router(community.router)
+app.include_router(spvs.router)
 
 
 # ── Auth Routes ───────────────────────────────────────────────────────────────

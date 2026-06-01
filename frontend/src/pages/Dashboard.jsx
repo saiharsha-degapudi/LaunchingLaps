@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
 import ScrollingBanner from '../components/ScrollingBanner'
+import SPVCard from '../components/SPVCard'
 
 // ── Entrepreneur-only ads & content ──────────────────────────────────────────
 const ENTREPRENEUR_ADS = [
@@ -103,6 +104,8 @@ export default function Dashboard() {
   const isEntrepreneur = user?.role === 'entrepreneur'
 
   const [stats, setStats] = useState({ pitches: null, investors: null, courses: null, posts: null })
+  const [spvs, setSpvs] = useState([])
+  const [myPitchIds, setMyPitchIds] = useState([])
 
   useEffect(() => {
     async function fetchStats() {
@@ -119,10 +122,21 @@ export default function Dashboard() {
           courses: courseRes.status === 'fulfilled' ? courseRes.value.data.length : 0,
           posts: postRes.status === 'fulfilled' ? postRes.value.data.length : 0,
         })
+        if (isEntrepreneur && pitchRes.status === 'fulfilled') {
+          setMyPitchIds(pitchRes.value.data.map(p => p.id))
+        }
       } catch { /* silently fail */ }
     }
     fetchStats()
-  }, [])
+  }, [isEntrepreneur])
+
+  useEffect(() => {
+    if (isEntrepreneur) {
+      api.get('/spvs/').then(r => setSpvs(r.data)).catch(() => {})
+    } else {
+      api.get('/spvs/?status=forming').then(r => setSpvs(r.data)).catch(() => {})
+    }
+  }, [isEntrepreneur])
 
   if (isEntrepreneur) {
     return (
@@ -168,6 +182,35 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
             {ENTREPRENEUR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
           </div>
+
+          {/* SPV Activity */}
+          {(() => {
+            const mySpvs = spvs.filter(s => myPitchIds.includes(s.pitch_id)).slice(0, 3)
+            return (
+              <div className="mb-10">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-black text-brand-800">SPV Activity on Your Pitches</h2>
+                  <Link to="/spvs" className="text-brand-700 text-sm font-semibold hover:underline">View all →</Link>
+                </div>
+                {mySpvs.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+                    <div className="text-4xl mb-3">🏦</div>
+                    <p className="font-bold text-brand-800 mb-1">No SPVs yet</p>
+                    <p className="text-gray-500 text-sm max-w-md mx-auto">
+                      Investors can form an SPV to fund your startup. Submit a pitch to get started.
+                    </p>
+                    <Link to="/submit-pitch" className="inline-block mt-4 bg-brand-800 hover:bg-brand-700 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
+                      Submit a Pitch →
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {mySpvs.map(s => <SPVCard key={s.id} spv={s} />)}
+                  </div>
+                )}
+              </div>
+            )
+          })()}
 
           {/* Tips & Resources */}
           <div className="flex items-center justify-between mb-4">
@@ -236,6 +279,35 @@ export default function Dashboard() {
         <h2 className="text-xl font-black text-brand-800 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
           {INVESTOR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
+        </div>
+
+        {/* SPVs Forming Now */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-black text-brand-800">SPVs Forming Now — Join or Lead</h2>
+            <div className="flex items-center gap-4">
+              <Link to="/spvs" className="text-gold-600 text-sm font-semibold hover:underline">View All SPVs →</Link>
+            </div>
+          </div>
+          {spvs.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+              <div className="text-4xl mb-3">🏦</div>
+              <p className="font-bold text-brand-800 mb-1">No SPVs forming right now</p>
+              <p className="text-gray-500 text-sm mb-4">Be the first to lead an SPV and start earning carry.</p>
+              <Link to="/lead-spv" className="inline-block bg-gold-500 hover:bg-gold-600 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
+                + Lead New SPV
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-4">
+                {spvs.slice(0, 4).map(s => <SPVCard key={s.id} spv={s} />)}
+              </div>
+              <Link to="/lead-spv" className="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-bold px-5 py-2.5 rounded-xl transition-colors text-sm">
+                + Lead New SPV
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Market Insights */}

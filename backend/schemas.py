@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -282,3 +282,54 @@ class MessageOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ── SPV ──────────────────────────────────────────────────────────────────────
+
+class SPVCreate(BaseModel):
+    pitch_id: int
+    title: str
+    description: Optional[str] = None
+    target_amount: float
+    carry_pct: float = 20.0
+    mgmt_fee_pct: float = 2.0
+    min_check: float = 5000.0
+    deadline: Optional[datetime] = None
+
+
+class SPVCommitRequest(BaseModel):
+    amount: float
+
+
+class SPVCommitmentOut(BaseModel):
+    id: int
+    investor_id: int
+    investor_name: str
+    amount: float
+    status: str
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SPVOut(BaseModel):
+    id: int
+    pitch_id: int
+    lead_investor_id: int
+    lead_investor_name: str
+    lead_investor_firm: Optional[str]
+    title: str
+    description: Optional[str]
+    target_amount: float
+    committed_amount: float
+    carry_pct: float
+    mgmt_fee_pct: float
+    min_check: float
+    deadline: Optional[datetime]
+    status: str
+    created_at: datetime
+    pct_funded: float
+    backer_count: int
+    pitch_title: str
+    pitch_industry: str
+    pitch_stage: str
+    model_config = ConfigDict(from_attributes=True)

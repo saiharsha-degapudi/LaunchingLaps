@@ -338,12 +338,120 @@ def seed():
     db.add_all([post1, post2, post3])
     db.commit()
 
+    # ── SPVs ─────────────────────────────────────────────────────────────────
+    from datetime import datetime, timezone, timedelta
+
+    spv1 = models.SPV(
+        pitch_id=pitch1.id,
+        lead_investor_id=investor1.id,
+        title="EcoDeliver SPV I",
+        description=(
+            "A special purpose vehicle co-investing in EcoDeliver's $500K seed round alongside "
+            "GreenCap Ventures. Focus on accelerating the company's city expansion and EV fleet buildout."
+        ),
+        target_amount=500000.0,
+        committed_amount=185000.0,
+        carry_pct=20.0,
+        mgmt_fee_pct=2.0,
+        min_check=10000.0,
+        deadline=datetime.now(timezone.utc) + timedelta(days=60),
+        status=models.SPVStatus.forming,
+    )
+    spv2 = models.SPV(
+        pitch_id=pitch2.id,
+        lead_investor_id=investor2.id,
+        title="MedBridge SPV I",
+        description=(
+            "SPV co-investing in MedBridge's $750K seed round. David Park leads with focus on "
+            "the digital health go-to-market and CMS certification milestone."
+        ),
+        target_amount=750000.0,
+        committed_amount=320000.0,
+        carry_pct=20.0,
+        mgmt_fee_pct=2.0,
+        min_check=5000.0,
+        deadline=datetime.now(timezone.utc) + timedelta(days=45),
+        status=models.SPVStatus.forming,
+    )
+    spv3 = models.SPV(
+        pitch_id=pitch1.id,
+        lead_investor_id=investor1.id,
+        title="GreenTech Opportunities SPV",
+        description=(
+            "A fully funded SPV focused on green technology opportunities. "
+            "This vehicle is now active and closed to new commitments."
+        ),
+        target_amount=250000.0,
+        committed_amount=250000.0,
+        carry_pct=20.0,
+        mgmt_fee_pct=2.0,
+        min_check=5000.0,
+        deadline=None,
+        status=models.SPVStatus.active,
+    )
+
+    db.add_all([spv1, spv2, spv3])
+    db.commit()
+    for s in [spv1, spv2, spv3]:
+        db.refresh(s)
+
+    # ── SPV Commitments ───────────────────────────────────────────────────────
+    # SPV 1 (EcoDeliver): David commits $100K and Sarah gets $85K from another backer
+    # We have david commit $100K and investor1 (sarah) commits $85K as a co-backer
+    commitment1 = models.SPVCommitment(
+        spv_id=spv1.id,
+        investor_id=investor2.id,   # david commits to sarah's SPV
+        amount=100000.0,
+        status="committed",
+    )
+    commitment2 = models.SPVCommitment(
+        spv_id=spv1.id,
+        investor_id=investor1.id,   # sarah's own lead commitment
+        amount=85000.0,
+        status="funded",
+    )
+
+    # SPV 2 (MedBridge): Sarah commits $150K, david's own lead piece $170K
+    commitment3 = models.SPVCommitment(
+        spv_id=spv2.id,
+        investor_id=investor1.id,   # sarah commits to david's SPV
+        amount=150000.0,
+        status="committed",
+    )
+    commitment4 = models.SPVCommitment(
+        spv_id=spv2.id,
+        investor_id=investor2.id,   # david's lead commitment
+        amount=170000.0,
+        status="funded",
+    )
+
+    # SPV 3 (GreenTech, active): both investors committed and are fully funded
+    commitment5 = models.SPVCommitment(
+        spv_id=spv3.id,
+        investor_id=investor1.id,
+        amount=150000.0,
+        status="funded",
+    )
+    commitment6 = models.SPVCommitment(
+        spv_id=spv3.id,
+        investor_id=investor2.id,
+        amount=100000.0,
+        status="funded",
+    )
+
+    db.add_all([commitment1, commitment2, commitment3, commitment4, commitment5, commitment6])
+    db.commit()
+
     print("Database seeded successfully!")
     print("\nSample accounts:")
     print("  Entrepreneur: maya@ecodeliver.com / password123")
     print("  Entrepreneur: james@medbridge.io / password123")
     print("  Investor:     sarah@greencap.vc / password123")
     print("  Investor:     david@fintechrising.com / password123")
+    print("\nSPVs seeded:")
+    print("  SPV 1: EcoDeliver SPV I (forming) — led by Sarah, $185K / $500K")
+    print("  SPV 2: MedBridge SPV I (forming) — led by David, $320K / $750K")
+    print("  SPV 3: GreenTech Opportunities SPV (active) — $250K / $250K")
 
 
 if __name__ == "__main__":

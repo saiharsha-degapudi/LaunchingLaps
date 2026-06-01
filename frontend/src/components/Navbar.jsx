@@ -34,6 +34,10 @@ export default function Navbar() {
               <>
                 <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
                 <NavLink to="/pitches" className={linkClass}>Pitches</NavLink>
+                <NavLink to="/spvs" className={linkClass}>SPVs</NavLink>
+                {user?.role === 'investor' && (
+                  <NavLink to="/lead-spv" className={linkClass}>Lead SPV</NavLink>
+                )}
                 <NavLink to="/investors" className={linkClass}>Investors</NavLink>
                 <NavLink to="/education" className={linkClass}>Learn</NavLink>
                 <NavLink to="/community" className={linkClass}>Community</NavLink>
@@ -82,6 +86,10 @@ export default function Navbar() {
             <>
               <NavLink to="/dashboard" className={linkClass} onClick={() => setMobileOpen(false)}>Dashboard</NavLink>
               <NavLink to="/pitches" className={linkClass} onClick={() => setMobileOpen(false)}>Pitches</NavLink>
+              <NavLink to="/spvs" className={linkClass} onClick={() => setMobileOpen(false)}>SPVs</NavLink>
+              {user?.role === 'investor' && (
+                <NavLink to="/lead-spv" className={linkClass} onClick={() => setMobileOpen(false)}>Lead SPV</NavLink>
+              )}
               <NavLink to="/investors" className={linkClass} onClick={() => setMobileOpen(false)}>Investors</NavLink>
               <NavLink to="/education" className={linkClass} onClick={() => setMobileOpen(false)}>Learn</NavLink>
               <NavLink to="/community" className={linkClass} onClick={() => setMobileOpen(false)}>Community</NavLink>
