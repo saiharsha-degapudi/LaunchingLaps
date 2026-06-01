@@ -26,7 +26,7 @@ const ENTREPRENEUR_TIPS = [
 
 const ENTREPRENEUR_QUICK_LINKS = [
   { to: '/submit-pitch', emoji: '➕', label: 'Submit a Pitch', desc: 'Create and publish your investor pitch', gradient: 'from-brand-700 to-brand-900' },
-  { to: '/pitches', emoji: '📋', label: 'My Pitches', desc: 'View interest and manage pitches', gradient: 'from-blue-500 to-brand-700' },
+  { to: '/pitches', emoji: '📋', label: 'My Pitches', desc: 'View interest and manage pitches', gradient: 'from-brand-500 to-brand-700' },
   { to: '/education', emoji: '🎓', label: 'Education', desc: 'Fundraising & US market courses', gradient: 'from-green-500 to-teal-600' },
   { to: '/community', emoji: '💬', label: 'Community', desc: 'Connect with fellow entrepreneurs', gradient: 'from-purple-500 to-pink-600' },
   { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Replies from interested investors', gradient: 'from-gold-500 to-orange-500' },
@@ -57,7 +57,7 @@ const INVESTOR_QUICK_LINKS = [
   { to: '/investors', emoji: '👥', label: 'Investor Network', desc: 'Connect with co-investors', gradient: 'from-brand-700 to-brand-900' },
   { to: '/education', emoji: '🎓', label: 'Investor Courses', desc: 'Startup evaluation & due diligence', gradient: 'from-green-500 to-teal-600' },
   { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Your founder conversations', gradient: 'from-purple-500 to-pink-600' },
-  { to: '/community', emoji: '💬', label: 'Investor Forum', desc: 'Share insights with other investors', gradient: 'from-blue-500 to-cyan-600' },
+  { to: '/community', emoji: '💬', label: 'Investor Forum', desc: 'Share insights with other investors', gradient: 'from-brand-500 to-brand-700' },
 ]
 
 function QuickLinkCard({ to, emoji, label, desc, gradient }) {
@@ -147,7 +147,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Welcome banner */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-brand-800 via-brand-700 to-blue-800 rounded-3xl p-8 mb-8 shadow-2xl">
+          <div className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700 rounded-3xl p-8 mb-8 shadow-2xl">
             <div className="absolute top-0 right-0 w-72 h-72 bg-gold-400 opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 blur-2xl pointer-events-none" />
             <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
               <div>
@@ -158,7 +158,7 @@ export default function Dashboard() {
                 <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
                   Welcome back, {user?.full_name?.split(' ')[0]}! 🚀
                 </h1>
-                <p className="text-blue-200 text-sm">
+                <p className="text-amber-100 text-sm">
                   You're on your way to connecting with global investors. Keep building!
                 </p>
               </div>

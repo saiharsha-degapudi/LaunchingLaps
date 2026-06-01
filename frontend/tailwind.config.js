@@ -8,21 +8,21 @@ export default {
     extend: {
       colors: {
         brand: {
-          50:  '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
+          50:  '#fdf7f0',
+          100: '#faeadb',
+          200: '#f3cfaa',
+          300: '#e8ac72',
+          400: '#d9843e',
+          500: '#c46b24',
+          600: '#a3561d',
+          700: '#83431a',
+          800: '#6b3518',  // rich warm brown — nav / primary
+          900: '#4e2712',
         },
         gold: {
           300: '#fcd34d',
           400: '#fbbf24',
-          500: '#f59e0b',  // accent amber/gold
+          500: '#f59e0b',  // vibrant amber/gold accent
           600: '#d97706',
           700: '#b45309',
         },

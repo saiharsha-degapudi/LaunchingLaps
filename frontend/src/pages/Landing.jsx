@@ -76,14 +76,14 @@ export default function Landing() {
       <AdCarousel />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-blue-900 text-white py-28 px-4">
+      <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700 text-white py-28 px-4">
         {/* Decorative blobs */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500 opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400 opacity-10 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500 opacity-15 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gold-400 opacity-10 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-gold-300 text-xs font-bold px-4 py-1.5 rounded-full mb-8 tracking-widest uppercase">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" /> Live Platform · 40+ Countries
+            <span className="w-2 h-2 bg-gold-400 rounded-full animate-pulse" /> Live Platform · 60+ Countries
           </span>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
@@ -93,7 +93,7 @@ export default function Landing() {
             </span>
           </h1>
 
-          <p className="text-blue-200 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-amber-100 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
             LaunchingLaps connects entrepreneurs worldwide with global investors through structured investment syndicates — raise smarter, invest together, grow faster.
           </p>
 
@@ -112,7 +112,7 @@ export default function Landing() {
             {[['500+', 'Founders'], ['200+', 'Global Investors'], ['$12M+', 'Deployed']].map(([v, l]) => (
               <div key={l} className="bg-white/10 backdrop-blur rounded-2xl py-4 border border-white/10">
                 <p className="text-2xl sm:text-3xl font-black text-gold-400">{v}</p>
-                <p className="text-blue-300 text-xs sm:text-sm mt-1">{l}</p>
+                <p className="text-amber-200 text-xs sm:text-sm mt-1">{l}</p>
               </div>
             ))}
           </div>
@@ -162,7 +162,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">Real People, Real Results</h2>
-            <p className="text-blue-300 text-lg">Join thousands already building their future on LaunchingLaps.</p>
+            <p className="text-amber-200 text-lg">Join thousands already building their future on LaunchingLaps.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t) => <TestimonialCard key={t.name} t={t} />)}
@@ -179,7 +179,7 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { emoji: '🏦', title: 'Investment Syndicates', desc: 'Pool capital from multiple investors into a single legal entity. Founders get one clean cap table entry — simple, fast, professional.', color: 'from-blue-500 to-brand-700' },
+              { emoji: '🏦', title: 'Investment Syndicates', desc: 'Pool capital from multiple investors into a single legal entity. Founders get one clean cap table entry — simple, fast, professional.', color: 'from-brand-400 to-brand-700' },
               { emoji: '🎯', title: 'Lead a Syndicate', desc: 'Experienced investors lead syndicates, earn carried interest, and build a portfolio with smaller individual checks.', color: 'from-gold-400 to-orange-500' },
               { emoji: '✅', title: 'Clean Cap Table', desc: 'Founders keep equity management simple. One syndicate = one investor on your cap table, no matter how many backers.', color: 'from-green-400 to-teal-500' },
               { emoji: '💬', title: 'Community Forum', desc: 'Ask questions, share wins, and learn from a global community of entrepreneurs.', color: 'from-purple-400 to-pink-500' },

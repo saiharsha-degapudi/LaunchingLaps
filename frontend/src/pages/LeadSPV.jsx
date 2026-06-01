@@ -256,7 +256,7 @@ export default function LeadSPV() {
           <div className="bg-brand-800 text-white rounded-2xl p-6">
             <div className="text-3xl mb-3">🏦</div>
             <h3 className="font-black text-lg mb-3">What is a Syndicate?</h3>
-            <p className="text-blue-200 text-sm leading-relaxed">
+            <p className="text-amber-100 text-sm leading-relaxed">
               A syndicate is a group of investors who pool capital together to make a single investment.
               Each member commits capital, which flows through one legal vehicle into the startup.
               The founder gets one clean cap table entry instead of dozens.

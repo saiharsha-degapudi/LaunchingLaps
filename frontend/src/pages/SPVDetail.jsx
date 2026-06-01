@@ -365,7 +365,7 @@ export default function SPVDetail() {
                 target={spv.target_amount}
                 pctFunded={spv.pct_funded}
               />
-              <div className="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 leading-relaxed">
+              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 leading-relaxed">
                 Share this syndicate page with potential investors to accelerate your funding round.
               </div>
             </div>
