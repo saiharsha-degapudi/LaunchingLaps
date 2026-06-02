@@ -31,6 +31,7 @@ const ENTREPRENEUR_QUICK_LINKS = [
   { to: '/community', emoji: '💬', label: 'Community', desc: 'Connect with fellow entrepreneurs', gradient: 'from-purple-500 to-pink-600' },
   { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Replies from interested investors', gradient: 'from-gold-500 to-orange-500' },
   { to: '/investors', emoji: '🔍', label: 'Find Investors', desc: 'Browse investor profiles & focus areas', gradient: 'from-red-500 to-rose-600' },
+  { to: '/government-schemes', emoji: '🏛️', label: 'Govt Schemes', desc: 'Explore government funding & policies', gradient: 'from-brand-700 to-brand-900' },
 ]
 
 // ── Investor-only ads & content ───────────────────────────────────────────────
@@ -179,7 +180,7 @@ export default function Dashboard() {
 
           {/* Quick Links */}
           <h2 className="text-xl font-black text-brand-800 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-10">
             {ENTREPRENEUR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
           </div>
 

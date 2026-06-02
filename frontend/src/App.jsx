@@ -18,6 +18,7 @@ import Messages from './pages/Messages'
 import SPVList from './pages/SPVList'
 import SPVDetail from './pages/SPVDetail'
 import LeadSPV from './pages/LeadSPV'
+import GovernmentSchemes from './pages/GovernmentSchemes'
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
                 <Route path="/spvs" element={<SPVList />} />
                 <Route path="/spvs/:id" element={<SPVDetail />} />
                 <Route path="/lead-spv" element={<LeadSPV />} />
+                <Route path="/government-schemes" element={<GovernmentSchemes />} />
               </Route>
 
               {/* Fallback */}
