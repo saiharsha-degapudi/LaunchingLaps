@@ -72,6 +72,9 @@ export default function Landing() {
   return (
     <div className="flex flex-col">
 
+      {/* Industry ticker — scrolls across the very top */}
+      <ScrollingBanner items={SECTORS} bgColor="bg-gradient-to-r from-brand-700 to-brand-800" textColor="text-white" speed={25} />
+
       {/* Auto-scrolling Ad Carousel */}
       <AdCarousel />
 
