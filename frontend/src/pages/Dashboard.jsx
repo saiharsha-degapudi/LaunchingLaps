@@ -18,16 +18,16 @@ const ENTREPRENEUR_ADS = [
 ]
 
 const ENTREPRENEUR_TIPS = [
-  { emoji: '📋', title: 'Perfect Your Pitch', desc: 'US investors spend on average 3 minutes on a pitch. Lead with your problem statement and traction metrics.', tag: 'Pitch Tips' },
-  { emoji: '💵', title: 'Know Your Numbers', desc: 'Always have your CAC, LTV, MRR, and burn rate ready. Investors will ask, so be prepared.', tag: 'Finance 101' },
-  { emoji: '🤝', title: 'Warm Introductions Win', desc: 'A warm intro from a mutual connection increases your reply rate from investors by over 400%.', tag: 'Networking' },
-  { emoji: '🌐', title: 'Structure Your Business', desc: 'Investors globally look for clear legal structures. Consider setting up an entity in a jurisdiction that suits your investor base.', tag: 'Legal Tip' },
+  { emoji: '📋', title: 'Perfect Your Pitch', desc: 'Investors spend on average 3 minutes on a pitch. Lead with your problem statement and traction metrics. Be specific.', tag: 'Pitch Tips' },
+  { emoji: '💵', title: 'Know Your Numbers', desc: 'Always have your CAC, LTV, MRR, and burn rate ready. Investors globally will ask, so know them cold.', tag: 'Finance 101' },
+  { emoji: '🤝', title: 'Warm Introductions Win', desc: 'A warm intro from a mutual connection increases your reply rate from investors by over 400% vs cold outreach.', tag: 'Networking' },
+  { emoji: '🌐', title: 'Structure Your Business', desc: 'Global investors look for clear legal structures. A Delaware C-Corp or equivalent clean entity inspires investor confidence.', tag: 'Legal Tip' },
 ]
 
 const ENTREPRENEUR_QUICK_LINKS = [
   { to: '/submit-pitch', emoji: '➕', label: 'Submit a Pitch', desc: 'Create and publish your investor pitch', gradient: 'from-brand-700 to-brand-900' },
-  { to: '/pitches', emoji: '📋', label: 'My Pitches', desc: 'View interest and manage pitches', gradient: 'from-blue-500 to-brand-700' },
-  { to: '/education', emoji: '🎓', label: 'Education', desc: 'Fundraising & US market courses', gradient: 'from-green-500 to-teal-600' },
+  { to: '/pitches', emoji: '📋', label: 'My Pitches', desc: 'Manage your pitches & track interest', gradient: 'from-blue-500 to-brand-700' },
+  { to: '/education', emoji: '🎓', label: 'Education', desc: '6 expert courses — free to access', gradient: 'from-green-500 to-teal-600' },
   { to: '/community', emoji: '💬', label: 'Community', desc: 'Connect with fellow entrepreneurs', gradient: 'from-purple-500 to-pink-600' },
   { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Replies from interested investors', gradient: 'from-gold-500 to-orange-500' },
   { to: '/investors', emoji: '🔍', label: 'Find Investors', desc: 'Browse investor profiles & focus areas', gradient: 'from-red-500 to-rose-600' },
@@ -54,11 +54,11 @@ const INVESTOR_INSIGHTS = [
 ]
 
 const INVESTOR_QUICK_LINKS = [
-  { to: '/pitches', emoji: '🔍', label: 'Browse Pitches', desc: 'Discover startups seeking funding', gradient: 'from-gold-500 to-orange-500' },
-  { to: '/investors', emoji: '👥', label: 'Investor Network', desc: 'Connect with co-investors', gradient: 'from-brand-700 to-brand-900' },
-  { to: '/education', emoji: '🎓', label: 'Investor Courses', desc: 'Startup evaluation & due diligence', gradient: 'from-green-500 to-teal-600' },
+  { to: '/pitches', emoji: '🔍', label: 'Browse Pitches', desc: '6 active pitches from global founders', gradient: 'from-gold-500 to-orange-500' },
+  { to: '/investors', emoji: '👥', label: 'Investor Network', desc: 'Co-invest with fellow investors', gradient: 'from-brand-700 to-brand-900' },
+  { to: '/education', emoji: '🎓', label: 'Courses', desc: '6 courses incl. Due Diligence & Series A', gradient: 'from-green-500 to-teal-600' },
   { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Your founder conversations', gradient: 'from-purple-500 to-pink-600' },
-  { to: '/community', emoji: '💬', label: 'Investor Forum', desc: 'Share insights with other investors', gradient: 'from-blue-500 to-cyan-600' },
+  { to: '/community', emoji: '💬', label: 'Community', desc: '10+ posts on deals, legal & strategy', gradient: 'from-blue-500 to-cyan-600' },
 ]
 
 function QuickLinkCard({ to, emoji, label, desc, gradient }) {
@@ -226,7 +226,7 @@ export default function Dashboard() {
           <div className="bg-gradient-to-r from-gold-500 to-yellow-400 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
             <div>
               <p className="text-white font-black text-lg">Ready to find your investor?</p>
-              <p className="text-yellow-100 text-sm">Browse 200+ verified US investors looking for startups like yours.</p>
+              <p className="text-yellow-100 text-sm">Browse verified global investors actively looking for startups in your sector.</p>
             </div>
             <Link to="/investors" className="flex-shrink-0 bg-brand-800 hover:bg-brand-700 text-white font-black px-6 py-3 rounded-xl transition whitespace-nowrap shadow">
               Browse Investors →
