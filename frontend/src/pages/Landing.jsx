@@ -182,21 +182,24 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { emoji: '🏦', title: 'Investment Syndicates', desc: 'Pool capital from multiple investors into a single legal entity. Founders get one clean cap table entry — simple, fast, professional.', color: 'from-blue-500 to-brand-700' },
-              { emoji: '🎯', title: 'Lead a Syndicate', desc: 'Experienced investors lead syndicates, earn carried interest, and build a portfolio with smaller individual checks.', color: 'from-gold-400 to-orange-500' },
-              { emoji: '✅', title: 'Clean Cap Table', desc: 'Founders keep equity management simple. One syndicate = one investor on your cap table, no matter how many backers.', color: 'from-green-400 to-teal-500' },
-              { emoji: '💬', title: 'Community Forum', desc: 'Ask questions, share wins, and learn from a global community of entrepreneurs.', color: 'from-purple-400 to-pink-500' },
-              { emoji: '📨', title: 'Direct Messaging', desc: 'Secure, private conversations between founders and investors — right on the platform.', color: 'from-red-400 to-rose-500' },
-              { emoji: '📊', title: 'Deal Dashboard', desc: 'Track expressions of interest, manage follow-ups, and close deals faster.', color: 'from-brand-500 to-cyan-500' },
+              { to: '/spvs',      emoji: '🏦', title: 'Investment Syndicates', desc: 'Pool capital from multiple investors into a single legal entity. Founders get one clean cap table entry — simple, fast, professional.', color: 'from-blue-500 to-brand-700',    cta: 'Browse Syndicates' },
+              { to: '/lead-spv',  emoji: '🎯', title: 'Lead a Syndicate',      desc: 'Experienced investors lead syndicates, earn carried interest, and build a portfolio with smaller individual checks.',                       color: 'from-gold-400 to-orange-500',  cta: 'Create a Syndicate' },
+              { to: '/spvs',      emoji: '✅', title: 'Clean Cap Table',        desc: 'Founders keep equity management simple. One syndicate = one investor on your cap table, no matter how many backers.',                         color: 'from-green-400 to-teal-500',   cta: 'View Syndicates' },
+              { to: '/community', emoji: '💬', title: 'Community Forum',        desc: 'Ask questions, share wins, and learn from a global community of entrepreneurs.',                                                               color: 'from-purple-400 to-pink-500',  cta: 'Join the Community' },
+              { to: '/messages',  emoji: '📨', title: 'Direct Messaging',       desc: 'Secure, private conversations between founders and investors — right on the platform.',                                                        color: 'from-red-400 to-rose-500',     cta: 'Open Messages' },
+              { to: '/pitches',   emoji: '📊', title: 'Deal Dashboard',         desc: 'Track expressions of interest, manage follow-ups, and close deals faster.',                                                                    color: 'from-brand-500 to-cyan-500',   cta: 'View Deal Flow' },
             ].map((f) => (
-              <div key={f.title} className="group relative bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden">
+              <Link key={f.title} to={f.to} className="group relative bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden flex flex-col">
                 <div className={`absolute inset-0 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-5 transition-opacity`} />
                 <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-2xl mb-4 shadow-md`}>
                   {f.emoji}
                 </div>
                 <h3 className="font-bold text-brand-800 text-base mb-2">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
-              </div>
+                <p className="text-gray-500 text-sm leading-relaxed flex-1">{f.desc}</p>
+                <div className={`mt-4 inline-flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r ${f.color} bg-clip-text text-transparent group-hover:gap-2.5 transition-all`}>
+                  {f.cta} <span>→</span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
