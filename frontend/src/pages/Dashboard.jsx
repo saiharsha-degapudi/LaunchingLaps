@@ -98,16 +98,6 @@ function InsightCard({ item }) {
   )
 }
 
-function StatCard({ label, value, emoji, gradient }) {
-  return (
-    <div className={`rounded-2xl p-5 bg-gradient-to-br ${gradient} text-white shadow-md`}>
-      <div className="text-2xl mb-2">{emoji}</div>
-      <p className="text-2xl font-black">{value ?? '—'}</p>
-      <p className="text-white/70 text-xs font-medium uppercase tracking-wide mt-1">{label}</p>
-    </div>
-  )
-}
-
 // ── Investor Scroll Strip (for Entrepreneur dashboard) ────────────────────────
 function InvestorScrollCard({ inv }) {
   const industries = inv.industry_focus?.split(',').slice(0, 3).map(s => s.trim()) || []
@@ -344,31 +334,14 @@ export default function Dashboard() {
   const { user } = useAuth()
   const isEntrepreneur = user?.role === 'entrepreneur'
 
-  const [stats, setStats] = useState({ pitches: null, investors: null, courses: null, posts: null })
   const [spvs, setSpvs] = useState([])
   const [myPitchIds, setMyPitchIds] = useState([])
 
   useEffect(() => {
-    async function fetchStats() {
-      try {
-        const [pitchRes, investorRes, courseRes, postRes] = await Promise.allSettled([
-          api.get('/pitches/'),
-          api.get('/investors/'),
-          api.get('/education/courses'),
-          api.get('/community/posts'),
-        ])
-        setStats({
-          pitches: pitchRes.status === 'fulfilled' ? pitchRes.value.data.length : 0,
-          investors: investorRes.status === 'fulfilled' ? investorRes.value.data.length : 0,
-          courses: courseRes.status === 'fulfilled' ? courseRes.value.data.length : 0,
-          posts: postRes.status === 'fulfilled' ? postRes.value.data.length : 0,
-        })
-        if (isEntrepreneur && pitchRes.status === 'fulfilled') {
-          setMyPitchIds(pitchRes.value.data.filter(p => p.owner_id === user?.id).map(p => p.id))
-        }
-      } catch { /* silently fail */ }
-    }
-    fetchStats()
+    if (!isEntrepreneur) return
+    api.get('/pitches/')
+      .then(r => setMyPitchIds(r.data.filter(p => p.owner_id === user?.id).map(p => p.id)))
+      .catch(() => {})
   }, [isEntrepreneur, user?.id])
 
   useEffect(() => {
@@ -408,14 +381,6 @@ export default function Dashboard() {
                 + Submit New Pitch
               </Link>
             </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <StatCard label="Active Pitches" value={stats.pitches} emoji="📋" gradient="from-brand-600 to-brand-800" />
-            <StatCard label="Global Investors" value={stats.investors} emoji="💼" gradient="from-gold-400 to-orange-500" />
-            <StatCard label="Courses Available" value={stats.courses} emoji="🎓" gradient="from-green-500 to-teal-600" />
-            <StatCard label="Community Posts" value={stats.posts} emoji="💬" gradient="from-purple-500 to-pink-600" />
           </div>
 
           {/* Quick Links */}
@@ -508,14 +473,6 @@ export default function Dashboard() {
               View New Pitches →
             </Link>
           </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Open Pitches" value={stats.pitches} emoji="📋" gradient="from-gold-500 to-orange-500" />
-          <StatCard label="Fellow Investors" value={stats.investors} emoji="👥" gradient="from-gray-700 to-gray-900" />
-          <StatCard label="Investor Courses" value={stats.courses} emoji="🎓" gradient="from-green-500 to-teal-600" />
-          <StatCard label="Forum Activity" value={stats.posts} emoji="💬" gradient="from-purple-500 to-pink-600" />
         </div>
 
         {/* Quick Links */}
