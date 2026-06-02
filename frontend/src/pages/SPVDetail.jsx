@@ -197,6 +197,119 @@ export default function SPVDetail() {
             </p>
           </div>
 
+          {/* Financial Projections */}
+          {spv.target_amount > 0 && (() => {
+            const T = spv.target_amount
+            const carry = spv.carry_pct / 100
+            const mgmtFeeAmt = (spv.committed_amount || 0) * (spv.mgmt_fee_pct || 0) / 100
+            const scenarios = [3, 5, 10].map(n => {
+              const profit = (n - 1) * T
+              const leadCarry = profit * carry
+              const lpNet = profit * (1 - carry) + T
+              const lpMultiple = lpNet / T
+              return { n, profit, leadCarry, lpNet, lpMultiple }
+            })
+            return (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Investment Details &amp; Projections</h2>
+
+                {/* Summary boxes */}
+                <div className="grid grid-cols-3 gap-3 mb-5">
+                  <div className="bg-brand-50 rounded-xl p-3 text-center">
+                    <p className="text-xs text-gray-400 font-medium mb-1">Target Raise</p>
+                    <p className="font-black text-brand-800 text-sm">{fmt(T)}</p>
+                  </div>
+                  <div className="bg-gold-50 rounded-xl p-3 text-center">
+                    <p className="text-xs text-gray-400 font-medium mb-1">Filled So Far</p>
+                    <p className="font-black text-gold-600 text-sm">
+                      {fmt(spv.committed_amount)}
+                      <span className="text-xs font-medium text-gray-400 ml-1">({(spv.pct_funded ?? 0).toFixed(0)}%)</span>
+                    </p>
+                  </div>
+                  <div className="bg-blue-50 rounded-xl p-3 text-center">
+                    <p className="text-xs text-gray-400 font-medium mb-1">Mgmt Fee/yr</p>
+                    <p className="font-black text-blue-700 text-sm">{mgmtFeeAmt > 0 ? fmt(mgmtFeeAmt) : '—'}</p>
+                  </div>
+                </div>
+
+                {/* Exit scenario table */}
+                <p className="text-xs font-bold text-gray-500 mb-3">
+                  Exit Scenarios <span className="font-normal text-gray-400">(on {fmt(T)} deployed capital)</span>
+                </p>
+                <div className="overflow-x-auto rounded-xl border border-gray-100">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left px-3 py-2.5 text-gray-400 font-semibold">Metric</th>
+                        <th className="text-right px-3 py-2.5 text-purple-600 font-bold">3× Exit</th>
+                        <th className="text-right px-3 py-2.5 text-blue-600 font-bold">5× Exit</th>
+                        <th className="text-right px-3 py-2.5 text-green-600 font-bold">10× Exit</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      <tr>
+                        <td className="px-3 py-2.5 text-gray-500 font-medium">Total Portfolio Value</td>
+                        {scenarios.map(({ n, }) => (
+                          <td key={n} className="px-3 py-2.5 text-right font-bold text-gray-800">{fmt(n * T)}</td>
+                        ))}
+                      </tr>
+                      <tr className="bg-gray-50/50">
+                        <td className="px-3 py-2.5 text-gray-500 font-medium">Total Profit</td>
+                        {scenarios.map(({ n, profit }) => (
+                          <td key={n} className="px-3 py-2.5 text-right font-bold text-green-700">{fmt(profit)}</td>
+                        ))}
+                      </tr>
+                      <tr>
+                        <td className="px-3 py-2.5 text-gray-500 font-medium">Lead Carry ({spv.carry_pct}%)</td>
+                        {scenarios.map(({ n, leadCarry }) => (
+                          <td key={n} className="px-3 py-2.5 text-right font-bold text-gold-600">{fmt(leadCarry)}</td>
+                        ))}
+                      </tr>
+                      <tr className="bg-gray-50/50">
+                        <td className="px-3 py-2.5 text-gray-500 font-medium">LP Net Return Pool</td>
+                        {scenarios.map(({ n, lpNet }) => (
+                          <td key={n} className="px-3 py-2.5 text-right font-bold text-brand-700">{fmt(lpNet)}</td>
+                        ))}
+                      </tr>
+                      <tr>
+                        <td className="px-3 py-2.5 text-gray-500 font-medium">Per $1 Invested (LP)</td>
+                        {scenarios.map(({ n, lpMultiple }) => (
+                          <td key={n} className="px-3 py-2.5 text-right font-black text-brand-800">{lpMultiple.toFixed(2)}×</td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Personalized projection */}
+                {myCommitment && myCommitment.amount > 0 && (
+                  <div className="mt-4 bg-gradient-to-r from-brand-50 to-gold-50 border border-brand-100 rounded-xl p-4">
+                    <p className="text-xs font-bold text-brand-700 mb-3">
+                      Your {fmt(myCommitment.amount)} Commitment → Projected Returns
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {scenarios.map(({ n, lpMultiple }) => {
+                        const myReturn = myCommitment.amount * lpMultiple
+                        const myProfit = myReturn - myCommitment.amount
+                        return (
+                          <div key={n} className="text-center bg-white rounded-lg p-2.5 shadow-sm">
+                            <p className="text-xs text-gray-400 font-medium">{n}× Exit</p>
+                            <p className="font-black text-brand-800 text-sm mt-0.5">{fmt(myReturn)}</p>
+                            <p className="text-xs text-green-600 font-semibold">+{fmt(myProfit)} profit</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-400 mt-4 leading-relaxed">
+                  * Projections are illustrative estimates. Actual returns depend on portfolio company performance, market conditions, and exit timing. All figures exclude taxes, legal fees, and transaction costs.
+                </p>
+              </div>
+            )
+          })()}
+
           {/* Commitments list */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
