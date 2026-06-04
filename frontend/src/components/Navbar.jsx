@@ -42,6 +42,7 @@ export default function Navbar() {
                 <NavLink to="/education" className={linkClass}>Learn</NavLink>
                 <NavLink to="/community" className={linkClass}>Community</NavLink>
                 <NavLink to="/messages" className={linkClass}>Messages</NavLink>
+                <NavLink to="/government-schemes" className={linkClass}>Govt Schemes</NavLink>
                 <div className="ml-4 flex items-center gap-3 border-l border-brand-700 pl-4">
                   <span className="text-brand-200 text-xs">
                     {user?.full_name} &middot; <span className="capitalize text-gold-400">{user?.role}</span>
@@ -94,6 +95,7 @@ export default function Navbar() {
               <NavLink to="/education" className={linkClass} onClick={() => setMobileOpen(false)}>Learn</NavLink>
               <NavLink to="/community" className={linkClass} onClick={() => setMobileOpen(false)}>Community</NavLink>
               <NavLink to="/messages" className={linkClass} onClick={() => setMobileOpen(false)}>Messages</NavLink>
+              <NavLink to="/government-schemes" className={linkClass} onClick={() => setMobileOpen(false)}>Govt Schemes</NavLink>
               <button onClick={handleLogout} className="text-left text-red-400 hover:text-red-300">Logout</button>
             </>
           ) : (

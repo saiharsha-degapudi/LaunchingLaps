@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
+import os
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -12,7 +13,7 @@ import models
 import schemas
 
 # ── Config ───────────────────────────────────────────────────────────────────
-SECRET_KEY = "launchinglaps-secret-key-change-in-production-2024"
+SECRET_KEY = os.environ["JWT_SECRET_KEY"]  # set this in your environment — never hardcode
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
