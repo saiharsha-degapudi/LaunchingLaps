@@ -49,6 +49,11 @@ class Token(BaseModel):
     user: UserOut
 
 
+class GoogleAuthRequest(BaseModel):
+    credential: str  # Google ID token
+    role: Optional[str] = "entrepreneur"  # used only when creating a new account
+
+
 # ── Pitches ─────────────────────────────────────────────────────────────────
 
 class PitchCreate(BaseModel):

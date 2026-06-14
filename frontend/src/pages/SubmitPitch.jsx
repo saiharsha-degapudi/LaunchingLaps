@@ -192,7 +192,7 @@ export default function SubmitPitch() {
                 id="funding_goal"
                 name="funding_goal"
                 type="number"
-                min="1"
+                min="1000"
                 step="1000"
                 required
                 value={form.funding_goal}

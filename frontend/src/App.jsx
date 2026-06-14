@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -22,6 +23,7 @@ import GovernmentSchemes from './pages/GovernmentSchemes'
 
 export default function App() {
   return (
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
     <AuthProvider>
       <BrowserRouter>
         <div className="min-h-screen flex flex-col">
@@ -65,5 +67,6 @@ export default function App() {
         </div>
       </BrowserRouter>
     </AuthProvider>
+    </GoogleOAuthProvider>
   )
 }

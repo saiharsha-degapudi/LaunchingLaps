@@ -5,6 +5,8 @@ load_dotenv()  # loads .env file if present — env vars already set take priori
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 from database import engine, get_db, Base
 import models
@@ -17,6 +19,8 @@ from auth import (
     get_user_by_email,
 )
 from routers import pitches, investors, education, community, spvs
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
@@ -102,6 +106,48 @@ def login(user_in: schemas.UserLogin, db: Session = Depends(get_db)):
 @app.get("/auth/me", response_model=schemas.UserOut)
 def me(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+
+@app.post("/auth/google", response_model=schemas.Token)
+def google_auth(payload: schemas.GoogleAuthRequest, db: Session = Depends(get_db)):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=501, detail="Google login is not configured on this server.")
+    try:
+        info = id_token.verify_oauth2_token(
+            payload.credential,
+            google_requests.Request(),
+            GOOGLE_CLIENT_ID,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid Google token: {e}")
+
+    email = info.get("email")
+    full_name = info.get("name", email.split("@")[0])
+    avatar_url = info.get("picture")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Google account has no email address.")
+
+    user = get_user_by_email(db, email)
+    if not user:
+        role = payload.role if payload.role in ("entrepreneur", "investor") else "entrepreneur"
+        user = models.User(
+            email=email,
+            full_name=full_name,
+            hashed_password="",  # no password for OAuth users
+            role=role,
+            avatar_url=avatar_url,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    token = create_access_token({"sub": user.email})
+    return schemas.Token(
+        access_token=token,
+        token_type="bearer",
+        user=schemas.UserOut.model_validate(user),
+    )
 
 
 @app.get("/health")

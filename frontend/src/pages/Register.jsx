@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
-  const { register } = useAuth()
+  const { register, googleLogin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -59,28 +60,57 @@ export default function Register() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Role selector */}
-            <div>
-              <label className="label">I am a…</label>
-              <div className="grid grid-cols-2 gap-3">
-                {['entrepreneur', 'investor'].map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => setForm((p) => ({ ...p, role }))}
-                    className={`py-3 rounded-lg border-2 text-sm font-semibold capitalize transition ${
-                      form.role === role
-                        ? 'border-brand-800 bg-brand-800 text-white'
-                        : 'border-gray-300 text-gray-600 hover:border-brand-800'
-                    }`}
-                  >
-                    {role}
-                  </button>
-                ))}
-              </div>
+          {/* Role selector — shown above Google button so role is sent with Google sign-up */}
+          <div className="mb-2">
+            <label className="label">I am a…</label>
+            <div className="grid grid-cols-2 gap-3">
+              {['entrepreneur', 'investor'].map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, role }))}
+                  className={`py-3 rounded-lg border-2 text-sm font-semibold capitalize transition ${
+                    form.role === role
+                      ? 'border-brand-800 bg-brand-800 text-white'
+                      : 'border-gray-300 text-gray-600 hover:border-brand-800'
+                  }`}
+                >
+                  {role}
+                </button>
+              ))}
             </div>
+          </div>
 
+          {/* Google Sign-Up */}
+          <div className="flex justify-center mb-1">
+            <GoogleLogin
+              onSuccess={async ({ credential }) => {
+                setLoading(true)
+                setError('')
+                try {
+                  await googleLogin(credential, form.role)
+                  navigate('/dashboard', { replace: true })
+                } catch {
+                  setError('Google sign-up failed. Please try again.')
+                } finally {
+                  setLoading(false)
+                }
+              }}
+              onError={() => setError('Google sign-up failed. Please try again.')}
+              shape="rectangular"
+              size="large"
+              width="360"
+              text="continue_with"
+            />
+          </div>
+
+          <div className="flex items-center gap-3 my-1">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400 font-medium">or sign up with email</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
               <label htmlFor="full_name" className="label">Full name</label>
               <input

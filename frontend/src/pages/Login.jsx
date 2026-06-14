@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, googleLogin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from?.pathname || '/dashboard'
@@ -102,6 +103,35 @@ export default function Login() {
           <div className="text-center mb-8">
             <h1 className="text-2xl font-black text-brand-800">Welcome back</h1>
             <p className="text-gray-500 text-sm mt-1">Sign in to your LaunchingLaps account</p>
+          </div>
+
+          {/* Google Sign-In */}
+          <div className="flex justify-center mb-5">
+            <GoogleLogin
+              onSuccess={async ({ credential }) => {
+                setLoading(true)
+                setError('')
+                try {
+                  await googleLogin(credential)
+                  navigate(from, { replace: true })
+                } catch {
+                  setError('Google sign-in failed. Please try again.')
+                } finally {
+                  setLoading(false)
+                }
+              }}
+              onError={() => setError('Google sign-in failed. Please try again.')}
+              shape="rectangular"
+              size="large"
+              width="360"
+              text="continue_with"
+            />
+          </div>
+
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400 font-medium">or sign in with email</span>
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
 
           {error && (

@@ -23,6 +23,15 @@ export function AuthProvider({ children }) {
     return data.user
   }, [])
 
+  const googleLogin = useCallback(async (credential, role = 'entrepreneur') => {
+    const { data } = await api.post('/auth/google', { credential, role })
+    localStorage.setItem('ll_token', data.access_token)
+    localStorage.setItem('ll_user', JSON.stringify(data.user))
+    setToken(data.access_token)
+    setUser(data.user)
+    return data.user
+  }, [])
+
   const register = useCallback(async (payload) => {
     const { data } = await api.post('/auth/register', payload)
     localStorage.setItem('ll_token', data.access_token)
@@ -42,7 +51,7 @@ export function AuthProvider({ children }) {
   const isAuthenticated = Boolean(token && user)
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, token, login, googleLogin, register, logout, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   )
