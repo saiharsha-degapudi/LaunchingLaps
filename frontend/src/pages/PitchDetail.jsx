@@ -241,6 +241,28 @@ export default function PitchDetail() {
             )}
           </div>
 
+          {/* Audit Status */}
+          {(() => {
+            const STATUS = {
+              open:     { label: 'Under Review', icon: '⏳', bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', desc: 'Our audit team is reviewing this pitch.' },
+              proceed:  { label: 'Proceed',       icon: '✅', bg: 'bg-green-50',  border: 'border-green-200',  text: 'text-green-700',  desc: 'This pitch has passed our audit review.' },
+              rejected: { label: 'Rejected',      icon: '❌', bg: 'bg-red-50',    border: 'border-red-200',    text: 'text-red-600',    desc: 'This pitch did not meet our criteria.' },
+            }
+            const s = STATUS[pitch.audit_status] || STATUS['open']
+            return (
+              <div className={`card border ${s.border} ${s.bg}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{s.icon}</span>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">LaunchingLaps Audit</p>
+                    <p className={`font-bold text-sm ${s.text}`}>{s.label}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">{s.desc}</p>
+              </div>
+            )
+          })()}
+
           {/* Pitch info card */}
           <div className="card flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pitch Details</h3>

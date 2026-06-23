@@ -6,10 +6,10 @@ const STAGE_COLORS = {
   growth: 'bg-blue-100 text-blue-700',
 }
 
-function auditBadgeColor(score) {
-  if (score >= 76) return 'bg-green-500'
-  if (score >= 60) return 'bg-yellow-400'
-  return 'bg-red-500'
+const AUDIT_STATUS = {
+  open:     { label: '⏳ Under Review', bg: 'bg-yellow-100', text: 'text-yellow-700' },
+  proceed:  { label: '✅ Proceed',       bg: 'bg-green-100',  text: 'text-green-700'  },
+  rejected: { label: '❌ Rejected',      bg: 'bg-red-100',    text: 'text-red-600'    },
 }
 
 export default function PitchCard({ pitch }) {
@@ -19,23 +19,19 @@ export default function PitchCard({ pitch }) {
   const fundingGoal = Number(pitch.funding_goal) || 0
   const committedAmount = Number(pitch.committed_amount) || 0
   const fundingPct = fundingGoal > 0 ? Math.min(100, Math.round((committedAmount / fundingGoal) * 100)) : 0
+  const auditStatus = AUDIT_STATUS[pitch.audit_status] || AUDIT_STATUS['open']
 
   return (
     <div className="card hover:shadow-md transition-shadow flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-2">
+      {/* Audit status bar at top */}
+      <div className={`-mx-5 -mt-5 px-5 py-2 rounded-t-xl flex items-center justify-between ${auditStatus.bg}`}>
+        <span className={`text-xs font-semibold ${auditStatus.text}`}>{auditStatus.label}</span>
+        <span className="text-xs text-gray-400">LaunchingLaps Audit</span>
+      </div>
+
+      <div className="flex items-start justify-between gap-2 mt-1">
         <h3 className="font-bold text-brand-800 text-lg leading-tight">{pitch.title}</h3>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {pitch.audit_score != null && (
-            <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-white text-xs font-semibold ${auditBadgeColor(pitch.audit_score)}`}
-              title={`Audit Score: ${pitch.audit_score}`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-white/60 inline-block" />
-              {pitch.audit_score} Audit
-            </span>
-          )}
-          <span className={`badge ${stageColor} capitalize whitespace-nowrap`}>{stage}</span>
-        </div>
+        <span className={`badge ${stageColor} capitalize whitespace-nowrap flex-shrink-0`}>{stage}</span>
       </div>
 
       <p className="text-gray-600 text-sm line-clamp-3">{pitch.description}</p>
