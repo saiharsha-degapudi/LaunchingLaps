@@ -23,6 +23,7 @@ import GovernmentSchemes from './pages/GovernmentSchemes'
 import BudgetPlanner from './pages/BudgetPlanner'
 import IdeaAudit from './pages/IdeaAudit'
 import ROICalculator from './pages/ROICalculator'
+import AuditDashboard from './pages/AuditDashboard'
 
 export default function App() {
   return (
@@ -56,6 +57,7 @@ export default function App() {
                 <Route path="/budget-planner" element={<BudgetPlanner />} />
                 <Route path="/idea-audit" element={<IdeaAudit />} />
                 <Route path="/roi-calculator" element={<ROICalculator />} />
+                <Route path="/audit" element={<AuditDashboard />} />
               </Route>
 
               {/* Fallback */}

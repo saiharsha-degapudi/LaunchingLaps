@@ -12,6 +12,7 @@ from database import Base
 class UserRole(str, enum.Enum):
     entrepreneur = "entrepreneur"
     investor = "investor"
+    audit = "audit"
 
 
 class PitchStage(str, enum.Enum):
@@ -54,6 +55,7 @@ class Pitch(Base):
     deck_url = Column(String, nullable=True)
     video_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    audit_status = Column(String, nullable=False, default="open")
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

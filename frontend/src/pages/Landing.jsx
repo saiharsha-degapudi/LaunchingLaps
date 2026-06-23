@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import ScrollingBanner from '../components/ScrollingBanner'
 import AdCarousel from '../components/AdCarousel'
+import api from '../api/axios'
 
 const TICKER_ITEMS = [
   '🚀 500+ Founders already funded globally',
@@ -29,28 +30,216 @@ const HOW_IT_WORKS_INVESTOR = [
 ]
 
 const TESTIMONIALS = [
-  {
-    name: 'Priya Sharma',
-    role: 'Founder, MediReach',
-    avatar: '👩‍💼',
-    quote: 'LaunchingLaps helped me connect with 3 global investors in my first week. The platform is incredibly easy to use and the education courses gave me the confidence to pitch professionally.',
-  },
-  {
-    name: 'James Okafor',
-    role: 'Angel Investor, NY',
-    avatar: '👨‍💰',
-    quote: 'The deal flow quality here is exceptional. I find well-prepared entrepreneurs with clear pitches — far better than traditional networks. Invested in two startups within a month.',
-  },
-  {
-    name: 'Carlos Rivera',
-    role: 'Founder, GreenLogix',
-    avatar: '🧑‍🚀',
-    quote: 'The business courses alone are worth it. Learning how US investors think changed how I structured my pitch. Closed a $250k seed round through a connection made here.',
-  },
+  { name: 'Priya Sharma', role: 'Founder, MediReach', avatar: '👩‍💼', quote: 'LaunchingLaps helped me connect with 3 global investors in my first week. The platform is incredibly easy to use and the education courses gave me the confidence to pitch professionally.' },
+  { name: 'James Okafor', role: 'Angel Investor, NY', avatar: '👨‍💰', quote: 'The deal flow quality here is exceptional. I find well-prepared entrepreneurs with clear pitches — far better than traditional networks. Invested in two startups within a month.' },
+  { name: 'Carlos Rivera', role: 'Founder, GreenLogix', avatar: '🧑‍🚀', quote: 'The business courses alone are worth it. Learning how US investors think changed how I structured my pitch. Closed a $250k seed round through a connection made here.' },
 ]
 
 const SECTORS = ['🤖 Artificial Intelligence', '🌿 Green Tech', '🏥 HealthTech', '💰 FinTech', '🛒 E-Commerce', '🏗️ PropTech', '📱 SaaS', '🎓 EdTech']
 
+const LIVE_ACTIVITY = [
+  { icon: '🤝', text: 'MedAI Diagnostics matched with Impact Horizon Fund', time: '2m' },
+  { icon: '💰', text: 'EcoDeliver closed $1.2M seed round — GreenCap led', time: '18m' },
+  { icon: '📋', text: 'FarmConnect pitch approved by audit team', time: '41m' },
+  { icon: '🚀', text: 'SwiftRoute received 3 term sheets this week', time: '1h' },
+  { icon: '👤', text: 'TechBridge Capital joined the platform', time: '2h' },
+  { icon: '📊', text: '14 new pitches submitted across 6 industries today', time: '3h' },
+  { icon: '🏆', text: 'NovaPay selected for LaunchingLaps Fast Track', time: '4h' },
+]
+
+const STAGE_BADGE = {
+  idea: 'bg-purple-100 text-purple-700',
+  seed: 'bg-emerald-100 text-emerald-700',
+  growth: 'bg-blue-100 text-blue-700',
+}
+
+// ── Vertical auto-scroll ──────────────────────────────────────────────────────
+function useVerticalScroll() {
+  const ref = useRef(null)
+  const pos = useRef(0)
+  const raf = useRef(null)
+  const paused = useRef(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const step = () => {
+      if (!paused.current) {
+        pos.current += 0.45
+        if (pos.current >= el.scrollHeight / 2) pos.current = 0
+        el.scrollTop = pos.current
+      }
+      raf.current = requestAnimationFrame(step)
+    }
+    raf.current = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf.current)
+  }, [])
+
+  return {
+    ref,
+    onMouseEnter: () => { paused.current = true },
+    onMouseLeave: () => { paused.current = false },
+  }
+}
+
+// ── LEFT — Pitch Side Column ──────────────────────────────────────────────────
+function PitchSideColumn({ pitches }) {
+  const items = pitches.length ? [...pitches, ...pitches] : []
+  const scroll = useVerticalScroll()
+
+  return (
+    <div className="hidden xl:flex flex-col w-[200px] flex-shrink-0 bg-[#0d1b3e] border-r border-white/10" style={{ height: '580px' }}>
+      <div className="px-3 pt-5 pb-2.5 border-b border-white/10">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Live Pitches</p>
+        </div>
+        <p className="text-xs text-white/30">{pitches.length} active · hover to pause</p>
+      </div>
+
+      <div ref={scroll.ref} className="flex-1 overflow-hidden px-3 py-3"
+        onMouseEnter={scroll.onMouseEnter} onMouseLeave={scroll.onMouseLeave}>
+        <div className="flex flex-col gap-2.5">
+          {items.length ? items.map((p, i) => {
+            const goalStr = p.funding_goal >= 1_000_000
+              ? `$${(p.funding_goal / 1_000_000).toFixed(1)}M`
+              : `$${(p.funding_goal / 1_000).toFixed(0)}K`
+            return (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 flex-shrink-0 hover:bg-white/8 transition-colors">
+                <div className="flex items-start justify-between gap-1 mb-1.5">
+                  <p className="font-bold text-white text-xs leading-tight line-clamp-2 flex-1">{p.title}</p>
+                  <span className="text-yellow-400 font-black text-xs flex-shrink-0 ml-1">{goalStr}</span>
+                </div>
+                <p className="text-blue-200/60 text-xs mb-2 line-clamp-2 leading-relaxed">{p.description}</p>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-xs bg-white/10 text-blue-200 px-1.5 py-0.5 rounded-full truncate max-w-[80px]">{p.industry}</span>
+                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full capitalize flex-shrink-0 ${STAGE_BADGE[p.stage] || 'bg-gray-100 text-gray-600'}`}>{p.stage}</span>
+                </div>
+              </div>
+            )
+          }) : [1,2,3,4,5].map(i => (
+            <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse flex-shrink-0" />
+          ))}
+        </div>
+      </div>
+
+      <div className="px-3 py-2.5 border-t border-white/10">
+        <Link to="/register" className="block text-center text-xs text-yellow-400 font-bold hover:underline">
+          Submit Your Pitch →
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// ── RIGHT — Investor Side Column ──────────────────────────────────────────────
+function InvestorSideColumn({ investors }) {
+  const items = investors.length ? [...investors, ...investors] : []
+  const scroll = useVerticalScroll()
+
+  return (
+    <div className="hidden xl:flex flex-col w-[200px] flex-shrink-0 bg-[#0d1b3e] border-l border-white/10" style={{ height: '580px' }}>
+      <div className="px-3 pt-5 pb-2.5 border-b border-white/10">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+          <p className="text-xs font-bold text-white/70 uppercase tracking-wider">Active Investors</p>
+        </div>
+        <p className="text-xs text-white/30">{investors.length} verified · hover to pause</p>
+      </div>
+
+      <div ref={scroll.ref} className="flex-1 overflow-hidden px-3 py-3"
+        onMouseEnter={scroll.onMouseEnter} onMouseLeave={scroll.onMouseLeave}>
+        <div className="flex flex-col gap-2.5">
+          {items.length ? items.map((inv, i) => {
+            const name = inv.user?.full_name || 'Investor'
+            const minStr = `$${(inv.investment_min / 1_000).toFixed(0)}K`
+            const maxStr = inv.investment_max >= 1_000_000
+              ? `$${(inv.investment_max / 1_000_000).toFixed(1)}M`
+              : `$${(inv.investment_max / 1_000).toFixed(0)}K`
+            const industries = inv.industry_focus?.split(',').slice(0, 2).map(s => s.trim()) || []
+            const stages = inv.preferred_stages?.split(',').slice(0, 1).map(s => s.trim()) || []
+            return (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 flex-shrink-0 hover:bg-white/8 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full bg-brand-700 flex items-center justify-center text-white font-black text-xs flex-shrink-0">
+                    {name[0]}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-white text-xs truncate">{name}</p>
+                    <p className="text-blue-300/60 text-xs truncate">{inv.firm_name}</p>
+                  </div>
+                </div>
+                <div className="bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-2 py-1 mb-2">
+                  <p className="text-yellow-400 font-black text-xs">{minStr} – {maxStr}</p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {industries.map(f => (
+                    <span key={f} className="text-xs bg-white/10 text-blue-200 px-1.5 py-0.5 rounded-full">{f}</span>
+                  ))}
+                  {stages.map(s => (
+                    <span key={s} className="text-xs bg-emerald-900/50 text-emerald-300 px-1.5 py-0.5 rounded-full capitalize">{s}</span>
+                  ))}
+                </div>
+              </div>
+            )
+          }) : [1,2,3,4,5].map(i => (
+            <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse flex-shrink-0" />
+          ))}
+        </div>
+      </div>
+
+      <div className="px-3 py-2.5 border-t border-white/10">
+        <Link to="/register" state={{ defaultRole: 'investor' }} className="block text-center text-xs text-yellow-400 font-bold hover:underline">
+          Join as Investor →
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// ── BOTTOM Live Strip ─────────────────────────────────────────────────────────
+function LiveStrip() {
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % LIVE_ACTIVITY.length), 4000)
+    return () => clearInterval(t)
+  }, [])
+  const item = LIVE_ACTIVITY[idx]
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0d1b3e] border-t border-white/10 py-2.5 px-4">
+      <div className="max-w-screen-2xl mx-auto flex items-center gap-4">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs font-bold text-white/50 uppercase tracking-wider hidden sm:block">Live</span>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <p key={idx} className="text-sm text-blue-100 truncate" style={{ animation: 'fadeSlideUp 0.4s ease' }}>
+            <span className="mr-1.5">{item.icon}</span>
+            <span className="font-medium">{item.text}</span>
+            <span className="text-white/30 ml-2 text-xs">{item.time} ago</span>
+          </p>
+        </div>
+        <div className="hidden lg:flex items-center gap-5 border-l border-white/10 pl-4 flex-shrink-0">
+          {[['500+', 'Founders'], ['$48M+', 'Funded'], ['340+', 'Investors'], ['60+', 'Countries']].map(([v, l]) => (
+            <div key={l} className="text-center">
+              <p className="text-yellow-400 font-black text-sm leading-none">{v}</p>
+              <p className="text-white/40 text-xs mt-0.5">{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+// ── Shared ────────────────────────────────────────────────────────────────────
 function TestimonialCard({ t }) {
   return (
     <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex flex-col gap-4">
@@ -66,163 +255,178 @@ function TestimonialCard({ t }) {
   )
 }
 
+// ── Main Landing ──────────────────────────────────────────────────────────────
 export default function Landing() {
   const [activeTab, setActiveTab] = useState('entrepreneur')
+  const [pitches, setPitches] = useState([])
+  const [investors, setInvestors] = useState([])
+
+  useEffect(() => {
+    api.get('/pitches/').then(r => setPitches(r.data)).catch(() => {})
+    api.get('/investors/').then(r => setInvestors(r.data)).catch(() => {})
+  }, [])
 
   return (
-    <div className="flex flex-col">
-
-      {/* Industry ticker — scrolls across the very top */}
+    <>
+      {/* TOP TICKER — full width */}
       <ScrollingBanner items={SECTORS} bgColor="bg-gradient-to-r from-brand-700 to-brand-800" textColor="text-white" speed={25} />
 
-      {/* Auto-scrolling Ad Carousel */}
-      <AdCarousel />
+      {/* ── 3-COLUMN ZONE: only around the carousel ── */}
+      <div className="flex bg-[#070e1f] pb-4">
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-blue-900 text-white py-28 px-4">
-        {/* Decorative blobs */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500 opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400 opacity-10 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
+        {/* LEFT pitch column */}
+        <PitchSideColumn pitches={pitches} />
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-gold-300 text-xs font-bold px-4 py-1.5 rounded-full mb-8 tracking-widest uppercase">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" /> Live Platform · 60+ Countries
-          </span>
-
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] mb-6 tracking-tight">
-            Where Ambitious Ideas{' '}
-            <span className="bg-gradient-to-r from-gold-400 to-yellow-300 bg-clip-text text-transparent">
-              Meet Global Capital
-            </span>
-          </h1>
-
-          <p className="text-blue-200 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            LaunchingLaps connects entrepreneurs worldwide with global investors through structured investment syndicates — raise smarter, invest together, grow faster.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
-            <Link to="/register" className="bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black text-base px-10 py-4 rounded-xl transition-all shadow-lg shadow-gold-500/30 hover:scale-105">
-              🚀 Raise Funding
-            </Link>
-            <Link to="/register" state={{ defaultRole: 'investor' }}
-              className="bg-white/10 backdrop-blur border-2 border-white/30 hover:bg-white/20 text-white font-black text-base px-10 py-4 rounded-xl transition-all hover:scale-105">
-              💼 Invest in Startups
-            </Link>
-          </div>
-
-          {/* Stats bar */}
-          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
-            {[['500+', 'Founders'], ['200+', 'Global Investors'], ['$12M+', 'Deployed']].map(([v, l]) => (
-              <div key={l} className="bg-white/10 backdrop-blur rounded-2xl py-4 border border-white/10">
-                <p className="text-2xl sm:text-3xl font-black text-gold-400">{v}</p>
-                <p className="text-blue-300 text-xs sm:text-sm mt-1">{l}</p>
-              </div>
-            ))}
-          </div>
+        {/* CENTER carousel with gap on top */}
+        <div className="flex-1 min-w-0 pt-4 px-3">
+          <AdCarousel />
         </div>
-      </section>
 
-      {/* Scrolling sectors */}
-      <ScrollingBanner items={SECTORS} bgColor="bg-gradient-to-r from-brand-700 to-brand-800" textColor="text-white" speed={25} />
+        {/* RIGHT investor column */}
+        <InvestorSideColumn investors={investors} />
+      </div>
+      {/* ── END 3-COLUMN ZONE ── */}
 
-      {/* How it works */}
-      <section className="py-24 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-black text-brand-800 mb-3">How It Works</h2>
-            <p className="text-gray-500 text-lg">A simple 4-step journey — whether you're raising or investing.</p>
-          </div>
+      {/* BOTTOM LIVE STRIP */}
+      <LiveStrip />
 
-          {/* Tab toggle */}
-          <div className="flex justify-center mb-12">
-            <div className="bg-white rounded-2xl p-1.5 shadow-md border border-gray-100 inline-flex gap-2">
-              <button onClick={() => setActiveTab('entrepreneur')}
-                className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'entrepreneur' ? 'bg-brand-800 text-white shadow' : 'text-gray-500 hover:text-brand-800'}`}>
-                🚀 Entrepreneur
-              </button>
-              <button onClick={() => setActiveTab('investor')}
-                className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'investor' ? 'bg-gold-500 text-white shadow' : 'text-gray-500 hover:text-gold-600'}`}>
-                💼 Investor
-              </button>
+      {/* REST OF PAGE — full width, no sidebars */}
+      <div className="flex flex-col">
+
+          {/* Hero */}
+          <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-800 to-blue-900 text-white py-24 px-4">
+            <div className="absolute top-0 left-0 w-96 h-96 bg-gold-500 opacity-10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400 opacity-10 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl pointer-events-none" />
+            <div className="max-w-4xl mx-auto text-center relative z-10">
+              <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 text-gold-300 text-xs font-bold px-4 py-1.5 rounded-full mb-8 tracking-widest uppercase">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" /> Live Platform · 60+ Countries
+              </span>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.05] mb-6 tracking-tight">
+                Where Ambitious Ideas{' '}
+                <span className="bg-gradient-to-r from-gold-400 to-yellow-300 bg-clip-text text-transparent">
+                  Meet Global Capital
+                </span>
+              </h1>
+              <p className="text-blue-200 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+                LaunchingLaps connects entrepreneurs worldwide with global investors through structured investment syndicates — raise smarter, invest together, grow faster.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <Link to="/register" className="bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black text-base px-8 py-4 rounded-xl transition-all shadow-lg hover:scale-105">
+                  🚀 Raise Funding
+                </Link>
+                <Link to="/register" state={{ defaultRole: 'investor' }}
+                  className="bg-white/10 backdrop-blur border-2 border-white/30 hover:bg-white/20 text-white font-black text-base px-8 py-4 rounded-xl transition-all hover:scale-105">
+                  💼 Invest in Startups
+                </Link>
+              </div>
+              <div className="grid grid-cols-3 gap-4 max-w-xl mx-auto">
+                {[['500+', 'Founders'], ['200+', 'Global Investors'], ['$12M+', 'Deployed']].map(([v, l]) => (
+                  <div key={l} className="bg-white/10 backdrop-blur rounded-2xl py-4 border border-white/10">
+                    <p className="text-2xl font-black text-gold-400">{v}</p>
+                    <p className="text-blue-300 text-xs sm:text-sm mt-1">{l}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {(activeTab === 'entrepreneur' ? HOW_IT_WORKS_ENTREPRENEUR : HOW_IT_WORKS_INVESTOR).map((item) => (
-              <div key={item.step} className="relative bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
-                <div className={`text-4xl font-black mb-4 ${activeTab === 'entrepreneur' ? 'text-brand-100' : 'text-gold-100'}`}>{item.step}</div>
-                <h3 className="font-bold text-brand-800 text-base mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-                <div className={`absolute top-4 right-4 w-2 h-2 rounded-full ${activeTab === 'entrepreneur' ? 'bg-brand-800' : 'bg-gold-500'}`} />
+          <ScrollingBanner items={SECTORS} bgColor="bg-gradient-to-r from-brand-700 to-brand-800" textColor="text-white" speed={25} />
+
+          {/* How it works */}
+          <section className="py-20 px-4 bg-gray-50">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl sm:text-4xl font-black text-brand-800 mb-3">How It Works</h2>
+                <p className="text-gray-500 text-lg">A simple 4-step journey — whether you're raising or investing.</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-24 px-4 bg-gradient-to-br from-brand-800 to-brand-900">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">Real People, Real Results</h2>
-            <p className="text-blue-300 text-lg">Join thousands already building their future on LaunchingLaps.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => <TestimonialCard key={t.name} t={t} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* Features strip */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-black text-brand-800 mb-3">Everything in One Platform</h2>
-            <p className="text-gray-500 text-lg">No more jumping between tools. LaunchingLaps does it all.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { to: '/spvs',      emoji: '🏦', title: 'Investment Syndicates', desc: 'Pool capital from multiple investors into a single legal entity. Founders get one clean cap table entry — simple, fast, professional.', color: 'from-blue-500 to-brand-700',    cta: 'Browse Syndicates' },
-              { to: '/lead-spv',  emoji: '🎯', title: 'Lead a Syndicate',      desc: 'Experienced investors lead syndicates, earn carried interest, and build a portfolio with smaller individual checks.',                       color: 'from-gold-400 to-orange-500',  cta: 'Create a Syndicate' },
-              { to: '/spvs',      emoji: '✅', title: 'Clean Cap Table',        desc: 'Founders keep equity management simple. One syndicate = one investor on your cap table, no matter how many backers.',                         color: 'from-green-400 to-teal-500',   cta: 'View Syndicates' },
-              { to: '/community', emoji: '💬', title: 'Community Forum',        desc: 'Ask questions, share wins, and learn from a global community of entrepreneurs.',                                                               color: 'from-purple-400 to-pink-500',  cta: 'Join the Community' },
-              { to: '/messages',  emoji: '📨', title: 'Direct Messaging',       desc: 'Secure, private conversations between founders and investors — right on the platform.',                                                        color: 'from-red-400 to-rose-500',     cta: 'Open Messages' },
-              { to: '/pitches',   emoji: '📊', title: 'Deal Dashboard',         desc: 'Track expressions of interest, manage follow-ups, and close deals faster.',                                                                    color: 'from-brand-500 to-cyan-500',   cta: 'View Deal Flow' },
-            ].map((f) => (
-              <Link key={f.title} to={f.to} className="group relative bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden flex flex-col">
-                <div className={`absolute inset-0 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-5 transition-opacity`} />
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-2xl mb-4 shadow-md`}>
-                  {f.emoji}
+              <div className="flex justify-center mb-12">
+                <div className="bg-white rounded-2xl p-1.5 shadow-md border border-gray-100 inline-flex gap-2">
+                  <button onClick={() => setActiveTab('entrepreneur')}
+                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'entrepreneur' ? 'bg-brand-800 text-white shadow' : 'text-gray-500 hover:text-brand-800'}`}>
+                    🚀 Entrepreneur
+                  </button>
+                  <button onClick={() => setActiveTab('investor')}
+                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'investor' ? 'bg-gold-500 text-white shadow' : 'text-gray-500 hover:text-gold-600'}`}>
+                    💼 Investor
+                  </button>
                 </div>
-                <h3 className="font-bold text-brand-800 text-base mb-2">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed flex-1">{f.desc}</p>
-                <div className={`mt-4 inline-flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r ${f.color} bg-clip-text text-transparent group-hover:gap-2.5 transition-all`}>
-                  {f.cta} <span>→</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {(activeTab === 'entrepreneur' ? HOW_IT_WORKS_ENTREPRENEUR : HOW_IT_WORKS_INVESTOR).map((item) => (
+                  <div key={item.step} className="relative bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
+                    <div className={`text-4xl font-black mb-4 ${activeTab === 'entrepreneur' ? 'text-brand-100' : 'text-gold-100'}`}>{item.step}</div>
+                    <h3 className="font-bold text-brand-800 text-base mb-2">{item.title}</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
+                    <div className={`absolute top-4 right-4 w-2 h-2 rounded-full ${activeTab === 'entrepreneur' ? 'bg-brand-800' : 'bg-gold-500'}`} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
 
-      {/* Final CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-gold-500 via-yellow-400 to-gold-500 py-20 px-4">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 50%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-        <div className="max-w-3xl mx-auto text-center relative z-10">
-          <h2 className="text-4xl font-black text-white mb-4 drop-shadow">Your next chapter starts here.</h2>
-          <p className="text-yellow-100 text-lg mb-8">
-            Join LaunchingLaps free — submit your pitch to global investors or discover your next investment opportunity in minutes.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register" className="bg-brand-800 hover:bg-brand-700 text-white font-black px-10 py-4 rounded-xl transition shadow-xl hover:scale-105">
-              🚀 Start as Entrepreneur
-            </Link>
-            <Link to="/register" state={{ defaultRole: 'investor' }} className="bg-white hover:bg-gray-50 text-brand-800 font-black px-10 py-4 rounded-xl transition shadow-xl hover:scale-105">
-              💼 Start as Investor
-            </Link>
-          </div>
-        </div>
-      </section>
-    </div>
+          {/* Testimonials */}
+          <section className="py-20 px-4 bg-gradient-to-br from-brand-800 to-brand-900">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl sm:text-4xl font-black text-white mb-3">Real People, Real Results</h2>
+                <p className="text-blue-300 text-lg">Join thousands already building their future on LaunchingLaps.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {TESTIMONIALS.map((t) => <TestimonialCard key={t.name} t={t} />)}
+              </div>
+            </div>
+          </section>
+
+          {/* Features strip */}
+          <section className="py-20 px-4 bg-white">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-14">
+                <h2 className="text-3xl sm:text-4xl font-black text-brand-800 mb-3">Everything in One Platform</h2>
+                <p className="text-gray-500 text-lg">No more jumping between tools. LaunchingLaps does it all.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[
+                  { to: '/spvs',      emoji: '🏦', title: 'Investment Syndicates', desc: 'Pool capital from multiple investors into a single legal entity. Founders get one clean cap table entry.', color: 'from-blue-500 to-brand-700',   cta: 'Browse Syndicates' },
+                  { to: '/lead-spv',  emoji: '🎯', title: 'Lead a Syndicate',      desc: 'Experienced investors lead syndicates, earn carried interest, and build a portfolio with smaller checks.',      color: 'from-gold-400 to-orange-500', cta: 'Create a Syndicate' },
+                  { to: '/spvs',      emoji: '✅', title: 'Clean Cap Table',        desc: 'Founders keep equity management simple. One syndicate = one investor on your cap table.',                         color: 'from-green-400 to-teal-500',  cta: 'View Syndicates' },
+                  { to: '/community', emoji: '💬', title: 'Community Forum',        desc: 'Ask questions, share wins, and learn from a global community of entrepreneurs.',                                  color: 'from-purple-400 to-pink-500', cta: 'Join the Community' },
+                  { to: '/messages',  emoji: '📨', title: 'Direct Messaging',       desc: 'Secure, private conversations between founders and investors — right on the platform.',                           color: 'from-red-400 to-rose-500',    cta: 'Open Messages' },
+                  { to: '/pitches',   emoji: '📊', title: 'Deal Dashboard',         desc: 'Track expressions of interest, manage follow-ups, and close deals faster.',                                       color: 'from-brand-500 to-cyan-500',  cta: 'View Deal Flow' },
+                ].map((f) => (
+                  <Link key={f.title} to={f.to} className="group relative bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden flex flex-col">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${f.color} opacity-0 group-hover:opacity-5 transition-opacity`} />
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-2xl mb-4 shadow-md`}>{f.emoji}</div>
+                    <h3 className="font-bold text-brand-800 text-base mb-2">{f.title}</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed flex-1">{f.desc}</p>
+                    <div className={`mt-4 inline-flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r ${f.color} bg-clip-text text-transparent group-hover:gap-2.5 transition-all`}>
+                      {f.cta} <span>→</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Final CTA */}
+          <section className="relative overflow-hidden bg-gradient-to-r from-gold-500 via-yellow-400 to-gold-500 py-20 px-4">
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+            <div className="max-w-3xl mx-auto text-center relative z-10">
+              <h2 className="text-4xl font-black text-white mb-4 drop-shadow">Your next chapter starts here.</h2>
+              <p className="text-yellow-100 text-lg mb-8">
+                Join LaunchingLaps free — submit your pitch to global investors or discover your next investment opportunity in minutes.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/register" className="bg-brand-800 hover:bg-brand-700 text-white font-black px-10 py-4 rounded-xl transition shadow-xl hover:scale-105">
+                  🚀 Start as Entrepreneur
+                </Link>
+                <Link to="/register" state={{ defaultRole: 'investor' }} className="bg-white hover:bg-gray-50 text-brand-800 font-black px-10 py-4 rounded-xl transition shadow-xl hover:scale-105">
+                  💼 Start as Investor
+                </Link>
+              </div>
+            </div>
+          </section>
+
+      </div>
+    </>
   )
 }

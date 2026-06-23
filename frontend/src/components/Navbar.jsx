@@ -32,17 +32,23 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-6 text-sm">
             {isAuthenticated ? (
               <>
-                <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
-                <NavLink to="/pitches" className={linkClass}>Pitches</NavLink>
-                <NavLink to="/spvs" className={linkClass}>Syndicates</NavLink>
-                {user?.role === 'investor' && (
-                  <NavLink to="/lead-spv" className={linkClass}>Create Syndicate</NavLink>
+                {user?.role === 'audit' ? (
+                  <NavLink to="/audit" className={linkClass}>Audit Dashboard</NavLink>
+                ) : (
+                  <>
+                    <NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink>
+                    <NavLink to="/pitches" className={linkClass}>Pitches</NavLink>
+                    <NavLink to="/spvs" className={linkClass}>Syndicates</NavLink>
+                    {user?.role === 'investor' && (
+                      <NavLink to="/lead-spv" className={linkClass}>Create Syndicate</NavLink>
+                    )}
+                    <NavLink to="/investors" className={linkClass}>Investors</NavLink>
+                    <NavLink to="/education" className={linkClass}>Learn</NavLink>
+                    <NavLink to="/community" className={linkClass}>Community</NavLink>
+                    <NavLink to="/messages" className={linkClass}>Messages</NavLink>
+                    <NavLink to="/government-schemes" className={linkClass}>Govt Schemes</NavLink>
+                  </>
                 )}
-                <NavLink to="/investors" className={linkClass}>Investors</NavLink>
-                <NavLink to="/education" className={linkClass}>Learn</NavLink>
-                <NavLink to="/community" className={linkClass}>Community</NavLink>
-                <NavLink to="/messages" className={linkClass}>Messages</NavLink>
-                <NavLink to="/government-schemes" className={linkClass}>Govt Schemes</NavLink>
 
                 <div className="ml-4 flex items-center gap-3 border-l border-brand-700 pl-4">
                   <span className="text-brand-200 text-xs">
@@ -58,9 +64,17 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-brand-100 hover:text-white transition-colors">Sign In</Link>
-                <Link to="/register" className="bg-gold-500 hover:bg-gold-600 text-white font-semibold px-4 py-2 rounded-lg transition">
-                  Get Started
+                <Link
+                  to="/login?type=entrepreneur"
+                  className="flex items-center gap-1.5 text-sm font-semibold text-brand-100 hover:text-gold-400 transition-colors"
+                >
+                  <span>🚀</span> Entrepreneur
+                </Link>
+                <Link
+                  to="/login?type=investor"
+                  className="flex items-center gap-1.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold px-4 py-2 rounded-lg transition text-sm"
+                >
+                  <span>💼</span> Investor
                 </Link>
               </>
             )}
@@ -86,23 +100,29 @@ export default function Navbar() {
         <div className="md:hidden bg-brand-900 border-t border-brand-700 px-4 pb-4 flex flex-col gap-3 text-sm">
           {isAuthenticated ? (
             <>
-              <NavLink to="/dashboard" className={linkClass} onClick={() => setMobileOpen(false)}>Dashboard</NavLink>
-              <NavLink to="/pitches" className={linkClass} onClick={() => setMobileOpen(false)}>Pitches</NavLink>
-              <NavLink to="/spvs" className={linkClass} onClick={() => setMobileOpen(false)}>Syndicates</NavLink>
-              {user?.role === 'investor' && (
-                <NavLink to="/lead-spv" className={linkClass} onClick={() => setMobileOpen(false)}>Create Syndicate</NavLink>
+              {user?.role === 'audit' ? (
+                <NavLink to="/audit" className={linkClass} onClick={() => setMobileOpen(false)}>Audit Dashboard</NavLink>
+              ) : (
+                <>
+                  <NavLink to="/dashboard" className={linkClass} onClick={() => setMobileOpen(false)}>Dashboard</NavLink>
+                  <NavLink to="/pitches" className={linkClass} onClick={() => setMobileOpen(false)}>Pitches</NavLink>
+                  <NavLink to="/spvs" className={linkClass} onClick={() => setMobileOpen(false)}>Syndicates</NavLink>
+                  {user?.role === 'investor' && (
+                    <NavLink to="/lead-spv" className={linkClass} onClick={() => setMobileOpen(false)}>Create Syndicate</NavLink>
+                  )}
+                  <NavLink to="/investors" className={linkClass} onClick={() => setMobileOpen(false)}>Investors</NavLink>
+                  <NavLink to="/education" className={linkClass} onClick={() => setMobileOpen(false)}>Learn</NavLink>
+                  <NavLink to="/community" className={linkClass} onClick={() => setMobileOpen(false)}>Community</NavLink>
+                  <NavLink to="/messages" className={linkClass} onClick={() => setMobileOpen(false)}>Messages</NavLink>
+                  <NavLink to="/government-schemes" className={linkClass} onClick={() => setMobileOpen(false)}>Govt Schemes</NavLink>
+                </>
               )}
-              <NavLink to="/investors" className={linkClass} onClick={() => setMobileOpen(false)}>Investors</NavLink>
-              <NavLink to="/education" className={linkClass} onClick={() => setMobileOpen(false)}>Learn</NavLink>
-              <NavLink to="/community" className={linkClass} onClick={() => setMobileOpen(false)}>Community</NavLink>
-              <NavLink to="/messages" className={linkClass} onClick={() => setMobileOpen(false)}>Messages</NavLink>
-              <NavLink to="/government-schemes" className={linkClass} onClick={() => setMobileOpen(false)}>Govt Schemes</NavLink>
               <button onClick={handleLogout} className="text-left text-red-400 hover:text-red-300">Logout</button>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-brand-100" onClick={() => setMobileOpen(false)}>Sign In</Link>
-              <Link to="/register" className="text-gold-400 font-semibold" onClick={() => setMobileOpen(false)}>Get Started</Link>
+              <Link to="/login?type=entrepreneur" className="text-brand-100 flex items-center gap-1.5" onClick={() => setMobileOpen(false)}>🚀 Entrepreneur</Link>
+              <Link to="/login?type=investor" className="text-gold-400 font-semibold flex items-center gap-1.5" onClick={() => setMobileOpen(false)}>💼 Investor</Link>
             </>
           )}
         </div>

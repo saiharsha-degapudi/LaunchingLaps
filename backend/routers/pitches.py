@@ -130,6 +130,26 @@ def express_interest(
     return interest
 
 
+@router.patch("/{pitch_id}/audit", response_model=schemas.PitchOut)
+def audit_pitch(
+    pitch_id: int,
+    audit_in: schemas.PitchAuditUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if current_user.role != models.UserRole.audit:
+        raise HTTPException(status_code=403, detail="Only audit team members can update audit status.")
+    if audit_in.audit_status not in ("open", "proceed", "rejected"):
+        raise HTTPException(status_code=400, detail="audit_status must be open, proceed, or rejected.")
+    pitch = db.query(models.Pitch).filter(models.Pitch.id == pitch_id).first()
+    if not pitch:
+        raise HTTPException(status_code=404, detail="Pitch not found")
+    pitch.audit_status = audit_in.audit_status
+    db.commit()
+    db.refresh(pitch)
+    return pitch
+
+
 @router.get("/my/pitches", response_model=List[schemas.PitchOut])
 def my_pitches(
     db: Session = Depends(get_db),

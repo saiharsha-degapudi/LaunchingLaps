@@ -113,7 +113,7 @@ export default function AdCarousel() {
   const ad = ADS[current]
 
   return (
-    <div className="relative w-full overflow-hidden bg-black" style={{ height: '560px' }}>
+    <div className="relative w-full overflow-hidden bg-black rounded-xl" style={{ height: '480px' }}>
 
       {/* Slides */}
       {ADS.map((a, i) => (

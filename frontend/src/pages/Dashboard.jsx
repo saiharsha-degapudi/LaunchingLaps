@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import api from '../api/axios'
 import ScrollingBanner from '../components/ScrollingBanner'
 import SPVCard from '../components/SPVCard'
@@ -58,7 +58,6 @@ const INVESTOR_QUICK_LINKS = [
   { to: '/community', emoji: '💬', label: 'Community', desc: '10+ posts on deals, legal & strategy', gradient: 'from-blue-500 to-cyan-600' },
 ]
 
-// ── Deal Flow Filters ─────────────────────────────────────────────────────────
 const DEAL_RANGES = [
   { label: 'All', min: 0, max: Infinity },
   { label: 'Under $500K', min: 0, max: 500000 },
@@ -67,6 +66,229 @@ const DEAL_RANGES = [
   { label: '$2M+', min: 2000001, max: Infinity },
 ]
 const DEAL_INDUSTRIES = ['All', 'FinTech', 'HealthTech', 'AgriTech', 'EdTech', 'Cybersecurity', 'Green Energy', 'SaaS']
+
+const LIVE_ACTIVITY = [
+  { icon: '🤝', text: 'MedAI matched with Impact Horizon Fund', time: '2m' },
+  { icon: '💰', text: 'EcoDeliver closed $1.2M seed round', time: '18m' },
+  { icon: '📋', text: 'FarmConnect pitch approved by audit team', time: '41m' },
+  { icon: '🚀', text: 'SwiftRoute received 3 term sheets', time: '1h' },
+  { icon: '👤', text: 'TechBridge Capital joined the platform', time: '2h' },
+  { icon: '📊', text: '14 new pitches submitted today', time: '3h' },
+  { icon: '🏆', text: 'NovaPay selected for Fast Track program', time: '4h' },
+]
+
+// ── Vertical Auto-Scroll Hook ─────────────────────────────────────────────────
+function useVerticalScroll(items) {
+  const ref = useRef(null)
+  const pos = useRef(0)
+  const raf = useRef(null)
+  const paused = useRef(false)
+
+  const startScroll = () => {
+    const el = ref.current
+    if (!el) return
+    const step = () => {
+      if (!paused.current) {
+        pos.current += 0.5
+        if (pos.current >= el.scrollHeight / 2) pos.current = 0
+        el.scrollTop = pos.current
+      }
+      raf.current = requestAnimationFrame(step)
+    }
+    raf.current = requestAnimationFrame(step)
+  }
+
+  useEffect(() => {
+    startScroll()
+    return () => cancelAnimationFrame(raf.current)
+  }, [items.length])
+
+  return {
+    ref,
+    onMouseEnter: () => { paused.current = true },
+    onMouseLeave: () => { paused.current = false },
+  }
+}
+
+// ── LEFT COLUMN — Pitch Cards ─────────────────────────────────────────────────
+const STAGE_BADGE = {
+  idea: 'bg-purple-100 text-purple-700',
+  seed: 'bg-green-100 text-green-700',
+  growth: 'bg-blue-100 text-blue-700',
+}
+
+function PitchSideColumn() {
+  const [pitches, setPitches] = useState([])
+  useEffect(() => { api.get('/pitches/').then(r => setPitches(r.data)).catch(() => {}) }, [])
+
+  const items = pitches.length ? [...pitches, ...pitches] : []
+  const scroll = useVerticalScroll(items)
+
+  if (!pitches.length) return (
+    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-[#0d1b3e] border-r border-white/10 px-3 py-4">
+      <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Live Pitches</p>
+      <div className="flex flex-col gap-2">
+        {[1,2,3,4].map(i => <div key={i} className="h-28 bg-white/5 rounded-xl animate-pulse" />)}
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-[#0d1b3e] border-r border-white/10 sticky top-16 h-[calc(100vh-64px)]">
+      <div className="px-3 pt-4 pb-2 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <p className="text-xs font-bold text-white/60 uppercase tracking-wider">Live Pitches</p>
+        </div>
+        <p className="text-xs text-white/30 mt-0.5">{pitches.length} active · hover to pause</p>
+      </div>
+      <div
+        ref={scroll.ref}
+        className="flex-1 overflow-hidden px-3 py-3"
+        onMouseEnter={scroll.onMouseEnter}
+        onMouseLeave={scroll.onMouseLeave}
+      >
+        <div className="flex flex-col gap-2.5">
+          {items.map((p, i) => {
+            const goalStr = p.funding_goal >= 1_000_000
+              ? `$${(p.funding_goal / 1_000_000).toFixed(1)}M`
+              : `$${(p.funding_goal / 1_000).toFixed(0)}K`
+            return (
+              <Link key={i} to={`/pitches/${p.id}`}
+                className="block bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/10 transition-colors flex-shrink-0">
+                <div className="flex items-start justify-between gap-1 mb-1.5">
+                  <p className="font-bold text-white text-xs leading-tight line-clamp-1 flex-1">{p.title}</p>
+                  <span className="text-yellow-400 font-black text-xs flex-shrink-0">{goalStr}</span>
+                </div>
+                <p className="text-blue-300 text-xs mb-1.5 line-clamp-2 leading-relaxed opacity-70">{p.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs bg-brand-800/60 text-blue-200 px-1.5 py-0.5 rounded-full">{p.industry}</span>
+                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full capitalize ${STAGE_BADGE[p.stage] || 'bg-gray-100 text-gray-600'}`}>{p.stage}</span>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+      <div className="px-3 py-2 border-t border-white/10">
+        <Link to="/pitches" className="block text-center text-xs text-yellow-400 font-bold hover:underline">View All Pitches →</Link>
+      </div>
+    </div>
+  )
+}
+
+// ── RIGHT COLUMN — Investor Cards ─────────────────────────────────────────────
+function InvestorSideColumn() {
+  const [investors, setInvestors] = useState([])
+  useEffect(() => { api.get('/investors/').then(r => setInvestors(r.data)).catch(() => {}) }, [])
+
+  const items = investors.length ? [...investors, ...investors] : []
+  const scroll = useVerticalScroll(items)
+
+  if (!investors.length) return (
+    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-[#0d1b3e] border-l border-white/10 px-3 py-4">
+      <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Investors</p>
+      <div className="flex flex-col gap-2">
+        {[1,2,3,4].map(i => <div key={i} className="h-28 bg-white/5 rounded-xl animate-pulse" />)}
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-[#0d1b3e] border-l border-white/10 sticky top-16 h-[calc(100vh-64px)]">
+      <div className="px-3 pt-4 pb-2 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+          <p className="text-xs font-bold text-white/60 uppercase tracking-wider">Active Investors</p>
+        </div>
+        <p className="text-xs text-white/30 mt-0.5">{investors.length} verified · hover to pause</p>
+      </div>
+      <div
+        ref={scroll.ref}
+        className="flex-1 overflow-hidden px-3 py-3"
+        onMouseEnter={scroll.onMouseEnter}
+        onMouseLeave={scroll.onMouseLeave}
+      >
+        <div className="flex flex-col gap-2.5">
+          {items.map((inv, i) => {
+            const name = inv.user?.full_name || 'Investor'
+            const initial = name[0]
+            const minStr = `$${(inv.investment_min / 1_000).toFixed(0)}K`
+            const maxStr = inv.investment_max >= 1_000_000
+              ? `$${(inv.investment_max / 1_000_000).toFixed(1)}M`
+              : `$${(inv.investment_max / 1_000).toFixed(0)}K`
+            const industries = inv.industry_focus?.split(',').slice(0, 2).map(s => s.trim()) || []
+            const stages = inv.preferred_stages?.split(',').slice(0, 2).map(s => s.trim()) || []
+
+            return (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/10 transition-colors flex-shrink-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-brand-700 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
+                    {initial}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-white text-xs truncate">{name}</p>
+                    <p className="text-blue-300 text-xs truncate opacity-70">{inv.firm_name}</p>
+                  </div>
+                </div>
+                <div className="bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-2 py-1 mb-2">
+                  <p className="text-yellow-400 font-black text-xs">{minStr} – {maxStr}</p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {industries.map(f => (
+                    <span key={f} className="text-xs bg-white/10 text-blue-200 px-1.5 py-0.5 rounded-full">{f}</span>
+                  ))}
+                  {stages.map(s => (
+                    <span key={s} className="text-xs bg-emerald-900/50 text-emerald-300 px-1.5 py-0.5 rounded-full capitalize">{s}</span>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      <div className="px-3 py-2 border-t border-white/10">
+        <Link to="/investors" className="block text-center text-xs text-yellow-400 font-bold hover:underline">View All Investors →</Link>
+      </div>
+    </div>
+  )
+}
+
+// ── BOTTOM LIVE STRIP ─────────────────────────────────────────────────────────
+function LiveActivityStrip() {
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % LIVE_ACTIVITY.length), 4000)
+    return () => clearInterval(t)
+  }, [])
+  const item = LIVE_ACTIVITY[idx]
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d1b3e] border-t border-white/10 py-2.5 px-4">
+      <div className="max-w-7xl mx-auto flex items-center gap-4">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs font-bold text-white/50 uppercase tracking-wider hidden sm:block">Live</span>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <p key={idx} className="text-sm text-blue-100 truncate animate-[fadeIn_0.4s_ease]">
+            <span className="mr-1.5">{item.icon}</span>
+            <span className="font-medium">{item.text}</span>
+            <span className="text-white/30 ml-2 text-xs">{item.time} ago</span>
+          </p>
+        </div>
+        <div className="hidden md:flex items-center gap-5 border-l border-white/10 pl-4 flex-shrink-0">
+          {[['2,400+', 'Startups'], ['$48M+', 'Funded'], ['340+', 'Investors'], ['92%', 'Match Rate']].map(([v, l]) => (
+            <div key={l} className="text-center">
+              <p className="text-yellow-400 font-black text-sm leading-none">{v}</p>
+              <p className="text-white/40 text-xs mt-0.5">{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ── Shared UI Components ──────────────────────────────────────────────────────
 function QuickLinkCard({ to, emoji, label, desc, gradient }) {
@@ -98,7 +320,6 @@ function InsightCard({ item }) {
   )
 }
 
-// ── Investor Scroll Strip (for Entrepreneur dashboard) ────────────────────────
 function InvestorScrollCard({ inv }) {
   const industries = inv.industry_focus?.split(',').slice(0, 3).map(s => s.trim()) || []
   const stages = inv.preferred_stages?.split(',').map(s => s.trim()) || []
@@ -109,7 +330,6 @@ function InvestorScrollCard({ inv }) {
 
   return (
     <div className="w-72 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1">
-      {/* Dark header */}
       <div className="bg-gradient-to-br from-brand-800 to-brand-900 p-5">
         <div className="flex items-center gap-3">
           <div className="w-14 h-14 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center text-white font-black text-2xl flex-shrink-0">
@@ -122,24 +342,17 @@ function InvestorScrollCard({ inv }) {
           </div>
         </div>
       </div>
-      {/* Body */}
       <div className="p-4">
         <div className="bg-gold-50 border border-gold-200 rounded-xl p-3 mb-3">
           <p className="text-xs text-gray-400 font-medium mb-0.5">Invests</p>
           <p className="font-black text-brand-800 text-sm">{minStr} – {maxStr}</p>
         </div>
-        {inv.user?.bio && (
-          <p className="text-gray-500 text-xs leading-relaxed mb-3 line-clamp-2">{inv.user.bio}</p>
-        )}
+        {inv.user?.bio && <p className="text-gray-500 text-xs leading-relaxed mb-3 line-clamp-2">{inv.user.bio}</p>}
         <div className="flex flex-wrap gap-1.5 mb-2">
-          {industries.map(ind => (
-            <span key={ind} className="text-xs bg-brand-100 text-brand-700 font-semibold px-2.5 py-0.5 rounded-full">{ind}</span>
-          ))}
+          {industries.map(ind => <span key={ind} className="text-xs bg-brand-100 text-brand-700 font-semibold px-2.5 py-0.5 rounded-full">{ind}</span>)}
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {stages.map(s => (
-            <span key={s} className="text-xs bg-green-100 text-green-700 font-semibold px-2.5 py-0.5 rounded-full capitalize">{s}</span>
-          ))}
+          {stages.map(s => <span key={s} className="text-xs bg-green-100 text-green-700 font-semibold px-2.5 py-0.5 rounded-full capitalize">{s}</span>)}
         </div>
       </div>
     </div>
@@ -151,10 +364,9 @@ function InvestorScrollSection() {
   useEffect(() => { api.get('/investors/').then(r => setInvestors(r.data)).catch(() => {}) }, [])
   if (!investors.length) return null
 
-  // Pad to at least 5 items for smooth loop
   let items = [...investors]
   while (items.length < 5) items = [...items, ...investors]
-  items = [...items, ...items] // duplicate for seamless loop
+  items = [...items, ...items]
 
   return (
     <div className="mb-10">
@@ -165,20 +377,10 @@ function InvestorScrollSection() {
         </div>
         <Link to="/investors" className="text-brand-700 text-sm font-semibold hover:underline">Connect with Investors →</Link>
       </div>
-      <div
-        className="group relative overflow-hidden"
-        style={{
-          maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-        }}
-      >
-        <div
-          className="flex gap-5 group-hover:[animation-play-state:paused]"
-          style={{
-            width: 'max-content',
-            animation: `scroll-left ${investors.length * 7}s linear infinite`,
-          }}
-        >
+      <div className="group relative overflow-hidden"
+        style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
+        <div className="flex gap-5 group-hover:[animation-play-state:paused]"
+          style={{ width: 'max-content', animation: `scroll-left ${investors.length * 7}s linear infinite` }}>
           {items.map((inv, i) => <InvestorScrollCard key={i} inv={inv} />)}
         </div>
       </div>
@@ -186,37 +388,26 @@ function InvestorScrollSection() {
   )
 }
 
-// ── Pitch Scroll Strip (for Investor dashboard) ───────────────────────────────
 function PitchScrollCard({ pitch }) {
-  const STAGE_COLORS = {
-    idea: 'bg-purple-100 text-purple-700',
-    seed: 'bg-green-100 text-green-700',
-    growth: 'bg-blue-100 text-blue-700',
-  }
+  const STAGE_COLORS = { idea: 'bg-purple-100 text-purple-700', seed: 'bg-green-100 text-green-700', growth: 'bg-blue-100 text-blue-700' }
   const stageColor = STAGE_COLORS[pitch.stage] || 'bg-gray-100 text-gray-700'
   const goalStr = pitch.funding_goal >= 1_000_000
     ? `$${(pitch.funding_goal / 1_000_000).toFixed(1)}M`
     : `$${(pitch.funding_goal / 1_000).toFixed(0)}K`
 
   return (
-    <Link
-      to={`/pitches/${pitch.id}`}
-      className="w-80 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all block"
-    >
-      {/* Dark header */}
+    <Link to={`/pitches/${pitch.id}`}
+      className="w-80 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all block">
       <div className="bg-gradient-to-br from-gray-900 to-brand-900 p-5">
         <div className="flex items-start justify-between gap-2 mb-3">
           <p className="font-black text-white text-base leading-tight line-clamp-2">
             {pitch.title.includes('—') ? pitch.title.split('—')[0].trim() : pitch.title}
           </p>
-          <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full capitalize whitespace-nowrap flex-shrink-0 ${stageColor}`}>
-            {pitch.stage}
-          </span>
+          <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full capitalize whitespace-nowrap flex-shrink-0 ${stageColor}`}>{pitch.stage}</span>
         </div>
         <p className="text-3xl font-black text-gold-400">{goalStr}</p>
         <p className="text-gray-400 text-xs mt-0.5">funding goal</p>
       </div>
-      {/* Body */}
       <div className="p-4">
         <span className="text-xs bg-brand-100 text-brand-700 font-semibold px-2.5 py-1 rounded-full">{pitch.industry}</span>
         <p className="text-gray-600 text-xs leading-relaxed mt-3 line-clamp-3">{pitch.description}</p>
@@ -242,7 +433,6 @@ function DealFlowSection() {
   useEffect(() => { api.get('/pitches/').then(r => setPitches(r.data)).catch(() => {}) }, [])
 
   const selectedRange = DEAL_RANGES.find(r => r.label === rangeFilter) || DEAL_RANGES[0]
-
   const filtered = pitches.filter(p => {
     const matchRange = p.funding_goal >= selectedRange.min && p.funding_goal <= selectedRange.max
     const matchIndustry = industryFilter === 'All' || p.industry.toLowerCase().includes(industryFilter.toLowerCase())
@@ -254,7 +444,6 @@ function DealFlowSection() {
 
   return (
     <div className="mb-10">
-      {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-xl font-black text-brand-800">Live Deal Flow</h2>
@@ -264,19 +453,13 @@ function DealFlowSection() {
         </div>
         <Link to="/pitches" className="text-gold-600 text-sm font-semibold hover:underline">View All Pitches →</Link>
       </div>
-
-      {/* Filters */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5 flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs text-gray-500 font-bold uppercase tracking-wider min-w-[110px]">Investment Range</span>
           <div className="flex flex-wrap gap-2">
             {DEAL_RANGES.map(r => (
               <button key={r.label} onClick={() => setRangeFilter(r.label)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                  rangeFilter === r.label
-                    ? 'bg-brand-800 text-white border-brand-800 shadow'
-                    : 'border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-700'
-                }`}>
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${rangeFilter === r.label ? 'bg-brand-800 text-white border-brand-800 shadow' : 'border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-700'}`}>
                 {r.label}
               </button>
             ))}
@@ -287,40 +470,23 @@ function DealFlowSection() {
           <div className="flex flex-wrap gap-2">
             {DEAL_INDUSTRIES.map(ind => (
               <button key={ind} onClick={() => setIndustryFilter(ind)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                  industryFilter === ind
-                    ? 'bg-gold-500 text-white border-gold-500 shadow'
-                    : 'border-gray-200 text-gray-600 hover:border-gold-400 hover:text-gold-700'
-                }`}>
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${industryFilter === ind ? 'bg-gold-500 text-white border-gold-500 shadow' : 'border-gray-200 text-gray-600 hover:border-gold-400 hover:text-gold-700'}`}>
                 {ind}
               </button>
             ))}
           </div>
         </div>
       </div>
-
-      {/* Scrolling pitches */}
       {filtered.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
           <div className="text-4xl mb-3">🔍</div>
           <p className="text-gray-500 text-sm font-medium">No pitches match your current filters.</p>
-          <p className="text-gray-400 text-xs mt-1">Try "All" range or a different industry.</p>
         </div>
       ) : (
-        <div
-          className="group relative overflow-hidden"
-          style={{
-            maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
-          }}
-        >
-          <div
-            className="flex gap-5 group-hover:[animation-play-state:paused]"
-            style={{
-              width: 'max-content',
-              animation: needsLoop ? `scroll-left ${filtered.length * 9}s linear infinite` : 'none',
-            }}
-          >
+        <div className="group relative overflow-hidden"
+          style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}>
+          <div className="flex gap-5 group-hover:[animation-play-state:paused]"
+            style={{ width: 'max-content', animation: needsLoop ? `scroll-left ${filtered.length * 9}s linear infinite` : 'none' }}>
             {items.map((pitch, i) => <PitchScrollCard key={i} pitch={pitch} />)}
           </div>
         </div>
@@ -352,107 +518,89 @@ export default function Dashboard() {
     }
   }, [isEntrepreneur])
 
-  // ── ENTREPRENEUR VIEW ────────────────────────────────────────────────────────
-  if (isEntrepreneur) {
-    return (
-      <div>
-        <ScrollingBanner items={ENTREPRENEUR_ADS} bgColor="bg-gradient-to-r from-brand-800 to-brand-900" textColor="text-gold-400" speed={32} />
+  const mainContent = isEntrepreneur ? (
+    <div>
+      <ScrollingBanner items={ENTREPRENEUR_ADS} bgColor="bg-gradient-to-r from-brand-800 to-brand-900" textColor="text-gold-400" speed={32} />
+      <div className="max-w-full px-4 sm:px-6 py-8 pb-16">
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-          {/* Welcome */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-brand-800 via-brand-700 to-blue-800 rounded-3xl p-8 mb-8 shadow-2xl">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-gold-400 opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 blur-2xl pointer-events-none" />
-            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              <div>
-                <p className="text-gold-400 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  Entrepreneur Dashboard
-                </p>
-                <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
-                  Welcome back, {user?.full_name?.split(' ')[0]}! 🚀
-                </h1>
-                <p className="text-blue-200 text-sm">
-                  You're on your way to connecting with global investors. Keep building!
-                </p>
-              </div>
-              <Link to="/submit-pitch"
-                className="flex-shrink-0 bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black px-6 py-3 rounded-xl transition-all shadow-lg hover:scale-105 whitespace-nowrap">
-                + Submit New Pitch
-              </Link>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <h2 className="text-xl font-black text-brand-800 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-10">
-            {ENTREPRENEUR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
-          </div>
-
-          {/* ★ BIG SCROLLING INVESTOR SECTION ★ */}
-          <InvestorScrollSection />
-
-          {/* Syndicate Activity on My Pitches */}
-          {(() => {
-            const mySpvs = spvs.filter(s => myPitchIds.includes(s.pitch_id)).slice(0, 3)
-            return (
-              <div className="mb-10">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-black text-brand-800">Syndicate Activity on Your Pitches</h2>
-                  <Link to="/spvs" className="text-brand-700 text-sm font-semibold hover:underline">View all →</Link>
-                </div>
-                {mySpvs.length === 0 ? (
-                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                    <div className="text-4xl mb-3">🏦</div>
-                    <p className="font-bold text-brand-800 mb-1">No syndicates yet</p>
-                    <p className="text-gray-500 text-sm max-w-md mx-auto">
-                      Investors can form a syndicate to fund your startup. Submit a pitch to get started.
-                    </p>
-                    <Link to="/submit-pitch" className="inline-block mt-4 bg-brand-800 hover:bg-brand-700 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
-                      Submit a Pitch →
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {mySpvs.map(s => <SPVCard key={s.id} spv={s} />)}
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-
-          {/* Tips & Resources */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black text-brand-800">Tips & Resources for You</h2>
-            <Link to="/education" className="text-brand-700 text-sm font-semibold hover:underline">View all courses →</Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-            {ENTREPRENEUR_TIPS.map((item) => <InsightCard key={item.title} item={item} />)}
-          </div>
-
-          {/* CTA */}
-          <div className="bg-gradient-to-r from-gold-500 to-yellow-400 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+        {/* Welcome */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-brand-800 via-brand-700 to-blue-800 rounded-3xl p-8 mb-8 shadow-2xl">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-gold-400 opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 blur-2xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <p className="text-white font-black text-lg">Ready to find your investor?</p>
-              <p className="text-yellow-100 text-sm">Browse verified global investors actively looking for startups in your sector.</p>
+              <p className="text-gold-400 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                Entrepreneur Dashboard
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
+                Welcome back, {user?.full_name?.split(' ')[0]}! 🚀
+              </h1>
+              <p className="text-blue-200 text-sm">You're on your way to connecting with global investors. Keep building!</p>
             </div>
-            <Link to="/investors" className="flex-shrink-0 bg-brand-800 hover:bg-brand-700 text-white font-black px-6 py-3 rounded-xl transition whitespace-nowrap shadow">
-              Browse Investors →
+            <Link to="/submit-pitch"
+              className="flex-shrink-0 bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black px-6 py-3 rounded-xl transition-all shadow-lg hover:scale-105 whitespace-nowrap">
+              + Submit New Pitch
             </Link>
           </div>
         </div>
-      </div>
-    )
-  }
 
-  // ── INVESTOR VIEW ─────────────────────────────────────────────────────────
-  return (
+        <h2 className="text-xl font-black text-brand-800 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-10">
+          {ENTREPRENEUR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
+        </div>
+
+        <InvestorScrollSection />
+
+        {(() => {
+          const mySpvs = spvs.filter(s => myPitchIds.includes(s.pitch_id)).slice(0, 3)
+          return (
+            <div className="mb-10">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-black text-brand-800">Syndicate Activity on Your Pitches</h2>
+                <Link to="/spvs" className="text-brand-700 text-sm font-semibold hover:underline">View all →</Link>
+              </div>
+              {mySpvs.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+                  <div className="text-4xl mb-3">🏦</div>
+                  <p className="font-bold text-brand-800 mb-1">No syndicates yet</p>
+                  <p className="text-gray-500 text-sm max-w-md mx-auto">Investors can form a syndicate to fund your startup. Submit a pitch to get started.</p>
+                  <Link to="/submit-pitch" className="inline-block mt-4 bg-brand-800 hover:bg-brand-700 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
+                    Submit a Pitch →
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {mySpvs.map(s => <SPVCard key={s.id} spv={s} />)}
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-black text-brand-800">Tips & Resources for You</h2>
+          <Link to="/education" className="text-brand-700 text-sm font-semibold hover:underline">View all courses →</Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          {ENTREPRENEUR_TIPS.map((item) => <InsightCard key={item.title} item={item} />)}
+        </div>
+
+        <div className="bg-gradient-to-r from-gold-500 to-yellow-400 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+          <div>
+            <p className="text-white font-black text-lg">Ready to find your investor?</p>
+            <p className="text-yellow-100 text-sm">Browse verified global investors actively looking for startups in your sector.</p>
+          </div>
+          <Link to="/investors" className="flex-shrink-0 bg-brand-800 hover:bg-brand-700 text-white font-black px-6 py-3 rounded-xl transition whitespace-nowrap shadow">
+            Browse Investors →
+          </Link>
+        </div>
+      </div>
+    </div>
+  ) : (
     <div>
       <ScrollingBanner items={INVESTOR_ADS} bgColor="bg-gradient-to-r from-gold-600 to-orange-500" textColor="text-white" speed={32} />
+      <div className="max-w-full px-4 sm:px-6 py-8 pb-16">
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        {/* Welcome */}
         <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-brand-900 rounded-3xl p-8 mb-8 shadow-2xl">
           <div className="absolute top-0 right-0 w-72 h-72 bg-gold-400 opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 blur-2xl pointer-events-none" />
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -461,12 +609,8 @@ export default function Dashboard() {
                 <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                 Investor Dashboard
               </p>
-              <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
-                Welcome back, {user?.full_name?.split(' ')[0]}! 💼
-              </h1>
-              <p className="text-gray-300 text-sm">
-                You have fresh deal flow waiting. Discover your next investment today.
-              </p>
+              <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">Welcome back, {user?.full_name?.split(' ')[0]}! 💼</h1>
+              <p className="text-gray-300 text-sm">You have fresh deal flow waiting. Discover your next investment today.</p>
             </div>
             <Link to="/pitches"
               className="flex-shrink-0 bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black px-6 py-3 rounded-xl transition-all shadow-lg hover:scale-105 whitespace-nowrap">
@@ -475,22 +619,17 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Links */}
         <h2 className="text-xl font-black text-brand-800 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
           {INVESTOR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
         </div>
 
-        {/* ★ BIG SCROLLING DEAL FLOW WITH FILTERS ★ */}
         <DealFlowSection />
 
-        {/* Syndicates Forming */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-black text-brand-800">Syndicates Forming Now — Join or Lead</h2>
-            <div className="flex items-center gap-4">
-              <Link to="/spvs" className="text-gold-600 text-sm font-semibold hover:underline">View All Syndicates →</Link>
-            </div>
+            <Link to="/spvs" className="text-gold-600 text-sm font-semibold hover:underline">View All Syndicates →</Link>
           </div>
           {spvs.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
@@ -513,7 +652,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Market Insights */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-black text-brand-800">Market Insights & Deal Flow</h2>
           <Link to="/pitches" className="text-gold-600 text-sm font-semibold hover:underline">Browse all pitches →</Link>
@@ -522,7 +660,6 @@ export default function Dashboard() {
           {INVESTOR_INSIGHTS.map((item) => <InsightCard key={item.title} item={item} />)}
         </div>
 
-        {/* CTA */}
         <div className="bg-gradient-to-r from-gray-900 to-brand-900 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
           <div>
             <p className="text-white font-black text-lg">Don't miss this week's top pitches</p>
@@ -534,5 +671,28 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+  )
+
+  return (
+    <>
+      {/* 3-column layout */}
+      <div className="flex min-h-[calc(100vh-64px)]">
+        <PitchSideColumn />
+        <main className="flex-1 min-w-0 overflow-x-hidden">
+          {mainContent}
+        </main>
+        <InvestorSideColumn />
+      </div>
+
+      {/* Live activity bottom strip */}
+      <LiveActivityStrip />
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </>
   )
 }

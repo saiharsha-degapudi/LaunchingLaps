@@ -7,6 +7,7 @@ from enum import Enum
 class UserRole(str, Enum):
     entrepreneur = "entrepreneur"
     investor = "investor"
+    audit = "audit"
 
 
 class PitchStage(str, Enum):
@@ -77,6 +78,11 @@ class PitchUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
+class PitchAuditUpdate(BaseModel):
+    audit_status: str  # open | proceed | rejected
+    audit_note: Optional[str] = None
+
+
 class PitchOut(BaseModel):
     id: int
     title: str
@@ -87,6 +93,7 @@ class PitchOut(BaseModel):
     deck_url: Optional[str] = None
     video_url: Optional[str] = None
     is_active: bool
+    audit_status: str = "open"
     owner_id: int
     owner: UserOut
     created_at: datetime
