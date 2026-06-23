@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
 import MilestoneTracker from '../components/MilestoneTracker'
+import ROICalculatorInline from '../components/ROICalculatorInline'
 
 const STAGE_COLORS = {
   idea: 'bg-purple-100 text-purple-700',
@@ -155,6 +156,15 @@ export default function PitchDetail() {
 
           {/* Milestone Tracker — owner only */}
           {isOwner && <MilestoneTracker />}
+
+          {/* ROI Calculator for investors */}
+          {isInvestor && (
+            <div className="card border border-blue-100">
+              <h2 className="font-bold text-brand-800 text-base mb-1">💰 ROI Calculator</h2>
+              <p className="text-xs text-gray-400 mb-4">Model your return on this pitch based on check size and exit scenario.</p>
+              <ROICalculatorInline fundingGoal={pitch.funding_goal} />
+            </div>
+          )}
 
           {/* Investor interest form */}
           {isInvestor && (

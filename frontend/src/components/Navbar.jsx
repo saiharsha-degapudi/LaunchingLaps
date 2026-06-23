@@ -6,7 +6,6 @@ export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [toolsOpen, setToolsOpen] = useState(false)
 
   function handleLogout() {
     logout()
@@ -44,61 +43,6 @@ export default function Navbar() {
                 <NavLink to="/community" className={linkClass}>Community</NavLink>
                 <NavLink to="/messages" className={linkClass}>Messages</NavLink>
                 <NavLink to="/government-schemes" className={linkClass}>Govt Schemes</NavLink>
-
-                {/* Tools dropdown */}
-                <div className="relative" onMouseEnter={() => setToolsOpen(true)} onMouseLeave={() => setToolsOpen(false)}>
-                  <button className="text-brand-100 hover:text-white transition-colors flex items-center gap-1">
-                    Tools
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  {toolsOpen && (
-                    <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 w-56 z-50">
-                      {user?.role === 'entrepreneur' && (
-                        <>
-                          <Link to="/idea-audit" onClick={() => setToolsOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
-                            <span className="text-lg">🎯</span>
-                            <div>
-                              <div className="font-semibold">Idea Audit</div>
-                              <div className="text-xs text-gray-400">Score your startup idea</div>
-                            </div>
-                          </Link>
-                          <Link to="/budget-planner" onClick={() => setToolsOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
-                            <span className="text-lg">📊</span>
-                            <div>
-                              <div className="font-semibold">Budget Planner</div>
-                              <div className="text-xs text-gray-400">Plan runway & burn rate</div>
-                            </div>
-                          </Link>
-                        </>
-                      )}
-                      {user?.role === 'investor' && (
-                        <Link to="/roi-calculator" onClick={() => setToolsOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
-                          <span className="text-lg">💰</span>
-                          <div>
-                            <div className="font-semibold">ROI Calculator</div>
-                            <div className="text-xs text-gray-400">Model your returns</div>
-                          </div>
-                        </Link>
-                      )}
-                      {/* Both roles */}
-                      {user?.role === 'entrepreneur' && (
-                        <Link to="/roi-calculator" onClick={() => setToolsOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
-                          <span className="text-lg">💰</span>
-                          <div>
-                            <div className="font-semibold">ROI Calculator</div>
-                            <div className="text-xs text-gray-400">Investor return model</div>
-                          </div>
-                        </Link>
-                      )}
-                    </div>
-                  )}
-                </div>
 
                 <div className="ml-4 flex items-center gap-3 border-l border-brand-700 pl-4">
                   <span className="text-brand-200 text-xs">
@@ -153,13 +97,6 @@ export default function Navbar() {
               <NavLink to="/community" className={linkClass} onClick={() => setMobileOpen(false)}>Community</NavLink>
               <NavLink to="/messages" className={linkClass} onClick={() => setMobileOpen(false)}>Messages</NavLink>
               <NavLink to="/government-schemes" className={linkClass} onClick={() => setMobileOpen(false)}>Govt Schemes</NavLink>
-              {user?.role === 'entrepreneur' && (
-                <>
-                  <NavLink to="/idea-audit" className={linkClass} onClick={() => setMobileOpen(false)}>🎯 Idea Audit</NavLink>
-                  <NavLink to="/budget-planner" className={linkClass} onClick={() => setMobileOpen(false)}>📊 Budget Planner</NavLink>
-                </>
-              )}
-              <NavLink to="/roi-calculator" className={linkClass} onClick={() => setMobileOpen(false)}>💰 ROI Calculator</NavLink>
               <button onClick={handleLogout} className="text-left text-red-400 hover:text-red-300">Logout</button>
             </>
           ) : (

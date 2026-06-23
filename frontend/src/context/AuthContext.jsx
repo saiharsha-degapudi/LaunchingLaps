@@ -3,6 +3,17 @@ import api from '../api/axios'
 
 const AuthContext = createContext(null)
 
+const DEMO_USERS = {
+  'maya@ecodeliver.com': {
+    id: 1, full_name: 'Maya Chen', email: 'maya@ecodeliver.com',
+    role: 'entrepreneur', bio: 'Green Tech founder at EcoDeliver', is_active: true,
+  },
+  'sarah@greencap.vc': {
+    id: 2, full_name: 'Sarah Williams', email: 'sarah@greencap.vc',
+    role: 'investor', bio: 'Partner at GreenCap Ventures', is_active: true,
+  },
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
@@ -15,6 +26,16 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('ll_token') || null)
 
   const login = useCallback(async (email, password) => {
+    // Demo accounts work offline
+    if (DEMO_USERS[email] && password === 'password123') {
+      const demoUser = DEMO_USERS[email]
+      const fakeToken = 'demo-token-' + demoUser.id
+      localStorage.setItem('ll_token', fakeToken)
+      localStorage.setItem('ll_user', JSON.stringify(demoUser))
+      setToken(fakeToken)
+      setUser(demoUser)
+      return demoUser
+    }
     const { data } = await api.post('/auth/login', { email, password })
     localStorage.setItem('ll_token', data.access_token)
     localStorage.setItem('ll_user', JSON.stringify(data.user))

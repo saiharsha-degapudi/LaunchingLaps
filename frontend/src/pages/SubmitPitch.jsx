@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
+import IdeaAuditInline from '../components/IdeaAuditInline'
+import BudgetPlannerInline from '../components/BudgetPlannerInline'
 
 const INDUSTRIES = [
   'Technology',
@@ -23,6 +25,8 @@ export default function SubmitPitch() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
+  const [showAudit, setShowAudit] = useState(false)
+  const [showBudget, setShowBudget] = useState(false)
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -111,6 +115,47 @@ export default function SubmitPitch() {
         <p className="text-gray-500 text-sm mt-1">
           Fill in the details below to present your startup to US investors.
         </p>
+      </div>
+
+      {/* Optional pre-submission tools */}
+      <div className="flex flex-col gap-3 mb-6">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">LaunchingLaps Audit Tools — Optional but recommended</p>
+
+        {/* Idea Audit */}
+        <div className="border border-indigo-200 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setShowAudit(v => !v)}
+            className="w-full flex items-center justify-between px-5 py-4 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🎯</span>
+              <div className="text-left">
+                <div className="font-semibold text-indigo-800 text-sm">Idea Audit Score</div>
+                <div className="text-xs text-indigo-500">Score your idea across 10 dimensions before submitting</div>
+              </div>
+            </div>
+            <span className="text-indigo-400 text-lg">{showAudit ? '▲' : '▼'}</span>
+          </button>
+          {showAudit && <div className="p-4 bg-white"><IdeaAuditInline /></div>}
+        </div>
+
+        {/* Budget Planner */}
+        <div className="border border-emerald-200 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setShowBudget(v => !v)}
+            className="w-full flex items-center justify-between px-5 py-4 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">📊</span>
+              <div className="text-left">
+                <div className="font-semibold text-emerald-800 text-sm">Budget Planner</div>
+                <div className="text-xs text-emerald-500">Calculate burn rate & runway to justify your funding goal</div>
+              </div>
+            </div>
+            <span className="text-emerald-400 text-lg">{showBudget ? '▲' : '▼'}</span>
+          </button>
+          {showBudget && <div className="p-4 bg-white"><BudgetPlannerInline /></div>}
+        </div>
       </div>
 
       <div className="card shadow-sm">
