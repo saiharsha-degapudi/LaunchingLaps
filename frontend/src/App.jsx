@@ -20,6 +20,9 @@ import SPVList from './pages/SPVList'
 import SPVDetail from './pages/SPVDetail'
 import LeadSPV from './pages/LeadSPV'
 import GovernmentSchemes from './pages/GovernmentSchemes'
+import BudgetPlanner from './pages/BudgetPlanner'
+import IdeaAudit from './pages/IdeaAudit'
+import ROICalculator from './pages/ROICalculator'
 
 export default function App() {
   return (
@@ -50,6 +53,9 @@ export default function App() {
                 <Route path="/spvs/:id" element={<SPVDetail />} />
                 <Route path="/lead-spv" element={<LeadSPV />} />
                 <Route path="/government-schemes" element={<GovernmentSchemes />} />
+                <Route path="/budget-planner" element={<BudgetPlanner />} />
+                <Route path="/idea-audit" element={<IdeaAudit />} />
+                <Route path="/roi-calculator" element={<ROICalculator />} />
               </Route>
 
               {/* Fallback */}

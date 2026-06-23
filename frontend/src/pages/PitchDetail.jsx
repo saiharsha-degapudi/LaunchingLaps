@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
+import MilestoneTracker from '../components/MilestoneTracker'
 
 const STAGE_COLORS = {
   idea: 'bg-purple-100 text-purple-700',
@@ -152,6 +153,9 @@ export default function PitchDetail() {
             </div>
           )}
 
+          {/* Milestone Tracker — owner only */}
+          {isOwner && <MilestoneTracker />}
+
           {/* Investor interest form */}
           {isInvestor && (
             <div className="card border-2 border-gold-200">
@@ -254,8 +258,12 @@ export default function PitchDetail() {
 
           {isOwner && (
             <div className="card border border-dashed border-gray-300">
-              <p className="text-xs text-gray-500 mb-3 font-medium">Owner Actions</p>
-              <p className="text-xs text-gray-400">Edit pitch functionality coming soon.</p>
+              <p className="text-xs text-gray-500 mb-3 font-medium">Quick Links</p>
+              <div className="flex flex-col gap-2">
+                <Link to="/idea-audit" className="text-xs text-indigo-600 hover:underline font-medium">🎯 Run Idea Audit</Link>
+                <Link to="/budget-planner" className="text-xs text-indigo-600 hover:underline font-medium">📊 Budget Planner</Link>
+                <Link to="/roi-calculator" className="text-xs text-indigo-600 hover:underline font-medium">💰 ROI Calculator</Link>
+              </div>
             </div>
           )}
         </div>
