@@ -345,3 +345,34 @@ class SPVOut(BaseModel):
     pitch_industry: str
     pitch_stage: str
     model_config = ConfigDict(from_attributes=True)
+
+
+# ── Audit Reports ─────────────────────────────────────────────────────────────
+
+class AuditReportCreate(BaseModel):
+    verdict: str = "pending"
+    score: Optional[float] = None
+    risk_level: str = "medium"
+    executive_summary: Optional[str] = None
+    findings: Optional[str] = None
+    recommendations: Optional[str] = None
+    strengths: Optional[str] = None
+    concerns: Optional[str] = None
+
+
+class AuditReportOut(BaseModel):
+    id: int
+    pitch_id: int
+    auditor_id: int
+    auditor: UserOut
+    verdict: str
+    score: Optional[float] = None
+    risk_level: str
+    executive_summary: Optional[str] = None
+    findings: Optional[str] = None
+    recommendations: Optional[str] = None
+    strengths: Optional[str] = None
+    concerns: Optional[str] = None
+    audited_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

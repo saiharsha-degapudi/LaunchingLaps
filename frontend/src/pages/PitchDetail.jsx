@@ -19,6 +19,7 @@ export default function PitchDetail() {
   const [pitch, setPitch] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [auditReport, setAuditReport] = useState(null)
 
   const [interestNote, setInterestNote] = useState('')
   const [interestLoading, setInterestLoading] = useState(false)
@@ -43,6 +44,7 @@ export default function PitchDetail() {
       }
     }
     fetchPitch()
+    api.get(`/pitches/${id}/audit-report`).then(r => setAuditReport(r.data)).catch(() => {})
   }, [id])
 
   async function handleExpressInterest(e) {
@@ -120,6 +122,109 @@ export default function PitchDetail() {
               {pitch.description}
             </div>
           </div>
+
+          {/* Audit Report Card */}
+          {auditReport && (() => {
+            const C = 2 * Math.PI * 38
+            const scoreColor = auditReport.score >= 75 ? '#10b981' : auditReport.score >= 50 ? '#f59e0b' : '#ef4444'
+            let strengths = [], concerns = [], findings = []
+            try { strengths = JSON.parse(auditReport.strengths || '[]') } catch {}
+            try { concerns  = JSON.parse(auditReport.concerns  || '[]') } catch {}
+            try { findings  = JSON.parse(auditReport.findings  || '[]') } catch {}
+            return (
+              <div className="rounded-2xl overflow-hidden border border-slate-700" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5">LaunchingLaps Audit Report</p>
+                    <h3 className="text-white font-black text-base">Due Diligence Complete</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-black border ${auditReport.verdict === 'proceed' ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-300' : auditReport.verdict === 'rejected' ? 'bg-red-500/20 border-red-400/30 text-red-300' : 'bg-amber-500/20 border-amber-400/30 text-amber-300'}`}>
+                      {auditReport.verdict === 'proceed' ? '✅ Approved' : auditReport.verdict === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${auditReport.risk_level === 'low' ? 'bg-emerald-500/15 border-emerald-400/20 text-emerald-400' : auditReport.risk_level === 'high' ? 'bg-red-500/15 border-red-400/20 text-red-400' : 'bg-amber-500/15 border-amber-400/20 text-amber-400'}`}>
+                      {(auditReport.risk_level || 'medium').toUpperCase()} RISK
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-5">
+                  {/* Score */}
+                  {auditReport.score != null && (
+                    <div className="flex items-center gap-5 bg-white/5 rounded-xl p-4">
+                      <div className="relative w-16 h-16 flex-shrink-0">
+                        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                          <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="12"/>
+                          <circle cx="50" cy="50" r="38" fill="none" stroke={scoreColor} strokeWidth="12"
+                            strokeDasharray={`${C * auditReport.score / 100} ${C}`} strokeLinecap="round"/>
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-lg font-black text-white leading-none">{Math.round(auditReport.score)}</span>
+                          <span className="text-[9px] text-slate-400">/100</span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-white font-bold">{auditReport.score >= 75 ? 'Strong Pitch' : auditReport.score >= 50 ? 'Solid Pitch' : 'Needs Work'}</p>
+                        <p className="text-slate-400 text-xs">Overall quality score</p>
+                        {findings.length > 0 && <p className="text-slate-500 text-xs mt-1">{findings.length} due diligence items verified</p>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Summary */}
+                  {auditReport.executive_summary && (
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1.5">Executive Summary</p>
+                      <p className="text-slate-200 text-sm leading-relaxed">{auditReport.executive_summary}</p>
+                    </div>
+                  )}
+
+                  {/* Strengths + Concerns */}
+                  {(strengths.length > 0 || concerns.length > 0) && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {strengths.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-black text-emerald-400 uppercase tracking-wider mb-2">💪 Strengths</p>
+                          <ul className="space-y-1.5">
+                            {strengths.map((s, i) => (
+                              <li key={i} className="text-xs text-slate-300 flex items-start gap-2">
+                                <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>{s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {concerns.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-black text-red-400 uppercase tracking-wider mb-2">⚠️ Concerns</p>
+                          <ul className="space-y-1.5">
+                            {concerns.map((c, i) => (
+                              <li key={i} className="text-xs text-slate-300 flex items-start gap-2">
+                                <span className="text-red-400 mt-0.5 flex-shrink-0">!</span>{c}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Recommendations */}
+                  {auditReport.recommendations && (
+                    <div className="border-t border-white/10 pt-4">
+                      <p className="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-1.5">💡 Recommendations</p>
+                      <p className="text-slate-300 text-xs leading-relaxed">{auditReport.recommendations}</p>
+                    </div>
+                  )}
+
+                  <p className="text-slate-600 text-[10px]">
+                    Audited by {auditReport.auditor?.full_name} · {new Date(auditReport.audited_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Media links */}
           {(pitch.deck_url || pitch.video_url) && (

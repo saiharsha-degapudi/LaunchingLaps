@@ -160,3 +160,45 @@ def my_pitches(
         .filter(models.Pitch.owner_id == current_user.id)
         .all()
     )
+
+
+@router.post("/{pitch_id}/audit-report", response_model=schemas.AuditReportOut)
+def submit_audit_report(
+    pitch_id: int,
+    report_in: schemas.AuditReportCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if current_user.role != models.UserRole.audit:
+        raise HTTPException(status_code=403, detail="Only audit team can submit reports.")
+    pitch = db.query(models.Pitch).filter(models.Pitch.id == pitch_id).first()
+    if not pitch:
+        raise HTTPException(status_code=404, detail="Pitch not found")
+    existing = db.query(models.AuditReport).filter(models.AuditReport.pitch_id == pitch_id).first()
+    if existing:
+        for field, value in report_in.model_dump(exclude_unset=True).items():
+            setattr(existing, field, value)
+        if report_in.verdict in ("proceed", "rejected"):
+            pitch.audit_status = report_in.verdict
+        db.commit()
+        db.refresh(existing)
+        return existing
+    report = models.AuditReport(pitch_id=pitch_id, auditor_id=current_user.id, **report_in.model_dump())
+    db.add(report)
+    if report_in.verdict in ("proceed", "rejected"):
+        pitch.audit_status = report_in.verdict
+    db.commit()
+    db.refresh(report)
+    return report
+
+
+@router.get("/{pitch_id}/audit-report", response_model=schemas.AuditReportOut)
+def get_audit_report(
+    pitch_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    report = db.query(models.AuditReport).filter(models.AuditReport.pitch_id == pitch_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="No audit report for this pitch yet.")
+    return report

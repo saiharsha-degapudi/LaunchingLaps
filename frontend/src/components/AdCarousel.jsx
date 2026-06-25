@@ -131,8 +131,8 @@ export default function AdCarousel() {
           <div className={`absolute inset-0 bg-gradient-to-r ${a.overlay}`} />
 
           {/* Content */}
-          <div className="absolute inset-0 flex items-center">
-            <div className="max-w-7xl mx-auto px-8 sm:px-12 w-full">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-full px-8 sm:px-12 flex flex-col items-center text-center">
               <div className="max-w-2xl">
 
                 {/* Brand line */}

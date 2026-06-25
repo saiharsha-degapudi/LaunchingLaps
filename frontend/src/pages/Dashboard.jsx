@@ -2,10 +2,9 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useEffect, useState, useRef } from 'react'
 import api from '../api/axios'
-import ScrollingBanner from '../components/ScrollingBanner'
+import DealFlowPipeline from '../components/DealFlowPipeline'
 import SPVCard from '../components/SPVCard'
 
-// ── Scrolling Ads ─────────────────────────────────────────────────────────────
 const ENTREPRENEUR_ADS = [
   '🚀 New: Get your pitch reviewed by an investor mentor — Book now',
   '📚 Free Course: "How to Register Your Business for Global Investors" — Enroll today',
@@ -30,7 +29,7 @@ const ENTREPRENEUR_TIPS = [
   { emoji: '📋', title: 'Perfect Your Pitch', desc: 'Investors spend on average 3 minutes on a pitch. Lead with your problem statement and traction metrics. Be specific.', tag: 'Pitch Tips' },
   { emoji: '💵', title: 'Know Your Numbers', desc: 'Always have your CAC, LTV, MRR, and burn rate ready. Investors globally will ask, so know them cold.', tag: 'Finance 101' },
   { emoji: '🤝', title: 'Warm Introductions Win', desc: 'A warm intro from a mutual connection increases your reply rate from investors by over 400% vs cold outreach.', tag: 'Networking' },
-  { emoji: '🌐', title: 'Structure Your Business', desc: 'Global investors look for clear legal structures. A Delaware C-Corp or equivalent clean entity inspires investor confidence.', tag: 'Legal Tip' },
+  { emoji: '🌍', title: 'Structure Your Business', desc: 'Global investors look for clear legal structures. A Delaware C-Corp or equivalent clean entity inspires investor confidence.', tag: 'Legal Tip' },
 ]
 
 const INVESTOR_INSIGHTS = [
@@ -77,7 +76,7 @@ const LIVE_ACTIVITY = [
   { icon: '🏆', text: 'NovaPay selected for Fast Track program', time: '4h' },
 ]
 
-// ── Vertical Auto-Scroll Hook ─────────────────────────────────────────────────
+// Vertical Auto-Scroll Hook
 function useVerticalScroll(items) {
   const ref = useRef(null)
   const pos = useRef(0)
@@ -110,187 +109,7 @@ function useVerticalScroll(items) {
   }
 }
 
-// ── LEFT COLUMN — Pitch Cards ─────────────────────────────────────────────────
-const STAGE_BADGE = {
-  idea: 'bg-purple-100 text-purple-700',
-  seed: 'bg-green-100 text-green-700',
-  growth: 'bg-blue-100 text-blue-700',
-}
-
-function PitchSideColumn() {
-  const [pitches, setPitches] = useState([])
-  useEffect(() => { api.get('/pitches/').then(r => setPitches(r.data)).catch(() => {}) }, [])
-
-  const items = pitches.length ? [...pitches, ...pitches] : []
-  const scroll = useVerticalScroll(items)
-
-  if (!pitches.length) return (
-    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-[#0d1b3e] border-r border-white/10 px-3 py-4">
-      <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Live Pitches</p>
-      <div className="flex flex-col gap-2">
-        {[1,2,3,4].map(i => <div key={i} className="h-28 bg-white/5 rounded-xl animate-pulse" />)}
-      </div>
-    </div>
-  )
-
-  return (
-    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-[#0d1b3e] border-r border-white/10 sticky top-16 h-[calc(100vh-64px)]">
-      <div className="px-3 pt-4 pb-2 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <p className="text-xs font-bold text-white/60 uppercase tracking-wider">Live Pitches</p>
-        </div>
-        <p className="text-xs text-white/30 mt-0.5">{pitches.length} active · hover to pause</p>
-      </div>
-      <div
-        ref={scroll.ref}
-        className="flex-1 overflow-hidden px-3 py-3"
-        onMouseEnter={scroll.onMouseEnter}
-        onMouseLeave={scroll.onMouseLeave}
-      >
-        <div className="flex flex-col gap-2.5">
-          {items.map((p, i) => {
-            const goalStr = p.funding_goal >= 1_000_000
-              ? `$${(p.funding_goal / 1_000_000).toFixed(1)}M`
-              : `$${(p.funding_goal / 1_000).toFixed(0)}K`
-            return (
-              <Link key={i} to={`/pitches/${p.id}`}
-                className="block bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/10 transition-colors flex-shrink-0">
-                <div className="flex items-start justify-between gap-1 mb-1.5">
-                  <p className="font-bold text-white text-xs leading-tight line-clamp-1 flex-1">{p.title}</p>
-                  <span className="text-yellow-400 font-black text-xs flex-shrink-0">{goalStr}</span>
-                </div>
-                <p className="text-blue-300 text-xs mb-1.5 line-clamp-2 leading-relaxed opacity-70">{p.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs bg-brand-800/60 text-blue-200 px-1.5 py-0.5 rounded-full">{p.industry}</span>
-                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full capitalize ${STAGE_BADGE[p.stage] || 'bg-gray-100 text-gray-600'}`}>{p.stage}</span>
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
-      <div className="px-3 py-2 border-t border-white/10">
-        <Link to="/pitches" className="block text-center text-xs text-yellow-400 font-bold hover:underline">View All Pitches →</Link>
-      </div>
-    </div>
-  )
-}
-
-// ── RIGHT COLUMN — Investor Cards ─────────────────────────────────────────────
-function InvestorSideColumn() {
-  const [investors, setInvestors] = useState([])
-  useEffect(() => { api.get('/investors/').then(r => setInvestors(r.data)).catch(() => {}) }, [])
-
-  const items = investors.length ? [...investors, ...investors] : []
-  const scroll = useVerticalScroll(items)
-
-  if (!investors.length) return (
-    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-[#0d1b3e] border-l border-white/10 px-3 py-4">
-      <p className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Investors</p>
-      <div className="flex flex-col gap-2">
-        {[1,2,3,4].map(i => <div key={i} className="h-28 bg-white/5 rounded-xl animate-pulse" />)}
-      </div>
-    </div>
-  )
-
-  return (
-    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 bg-[#0d1b3e] border-l border-white/10 sticky top-16 h-[calc(100vh-64px)]">
-      <div className="px-3 pt-4 pb-2 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
-          <p className="text-xs font-bold text-white/60 uppercase tracking-wider">Active Investors</p>
-        </div>
-        <p className="text-xs text-white/30 mt-0.5">{investors.length} verified · hover to pause</p>
-      </div>
-      <div
-        ref={scroll.ref}
-        className="flex-1 overflow-hidden px-3 py-3"
-        onMouseEnter={scroll.onMouseEnter}
-        onMouseLeave={scroll.onMouseLeave}
-      >
-        <div className="flex flex-col gap-2.5">
-          {items.map((inv, i) => {
-            const name = inv.user?.full_name || 'Investor'
-            const initial = name[0]
-            const minStr = `$${(inv.investment_min / 1_000).toFixed(0)}K`
-            const maxStr = inv.investment_max >= 1_000_000
-              ? `$${(inv.investment_max / 1_000_000).toFixed(1)}M`
-              : `$${(inv.investment_max / 1_000).toFixed(0)}K`
-            const industries = inv.industry_focus?.split(',').slice(0, 2).map(s => s.trim()) || []
-            const stages = inv.preferred_stages?.split(',').slice(0, 2).map(s => s.trim()) || []
-
-            return (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/10 transition-colors flex-shrink-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-brand-700 flex items-center justify-center text-white font-black text-sm flex-shrink-0">
-                    {initial}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-white text-xs truncate">{name}</p>
-                    <p className="text-blue-300 text-xs truncate opacity-70">{inv.firm_name}</p>
-                  </div>
-                </div>
-                <div className="bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-2 py-1 mb-2">
-                  <p className="text-yellow-400 font-black text-xs">{minStr} – {maxStr}</p>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {industries.map(f => (
-                    <span key={f} className="text-xs bg-white/10 text-blue-200 px-1.5 py-0.5 rounded-full">{f}</span>
-                  ))}
-                  {stages.map(s => (
-                    <span key={s} className="text-xs bg-emerald-900/50 text-emerald-300 px-1.5 py-0.5 rounded-full capitalize">{s}</span>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-      <div className="px-3 py-2 border-t border-white/10">
-        <Link to="/investors" className="block text-center text-xs text-yellow-400 font-bold hover:underline">View All Investors →</Link>
-      </div>
-    </div>
-  )
-}
-
-// ── BOTTOM LIVE STRIP ─────────────────────────────────────────────────────────
-function LiveActivityStrip() {
-  const [idx, setIdx] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % LIVE_ACTIVITY.length), 4000)
-    return () => clearInterval(t)
-  }, [])
-  const item = LIVE_ACTIVITY[idx]
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d1b3e] border-t border-white/10 py-2.5 px-4">
-      <div className="max-w-7xl mx-auto flex items-center gap-4">
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs font-bold text-white/50 uppercase tracking-wider hidden sm:block">Live</span>
-        </div>
-        <div className="flex-1 overflow-hidden">
-          <p key={idx} className="text-sm text-blue-100 truncate animate-[fadeIn_0.4s_ease]">
-            <span className="mr-1.5">{item.icon}</span>
-            <span className="font-medium">{item.text}</span>
-            <span className="text-white/30 ml-2 text-xs">{item.time} ago</span>
-          </p>
-        </div>
-        <div className="hidden md:flex items-center gap-5 border-l border-white/10 pl-4 flex-shrink-0">
-          {[['2,400+', 'Startups'], ['$48M+', 'Funded'], ['340+', 'Investors'], ['92%', 'Match Rate']].map(([v, l]) => (
-            <div key={l} className="text-center">
-              <p className="text-yellow-400 font-black text-sm leading-none">{v}</p>
-              <p className="text-white/40 text-xs mt-0.5">{l}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Shared UI Components ──────────────────────────────────────────────────────
+// Shared UI Components
 function QuickLinkCard({ to, emoji, label, desc, gradient }) {
   return (
     <Link to={to} className="group relative bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden flex flex-col gap-3">
@@ -495,7 +314,7 @@ function DealFlowSection() {
   )
 }
 
-// ── Main Dashboard ─────────────────────────────────────────────────────────────
+// Main Dashboard
 export default function Dashboard() {
   const { user } = useAuth()
   const isEntrepreneur = user?.role === 'entrepreneur'
@@ -520,8 +339,7 @@ export default function Dashboard() {
 
   const mainContent = isEntrepreneur ? (
     <div>
-      <ScrollingBanner items={ENTREPRENEUR_ADS} bgColor="bg-gradient-to-r from-brand-800 to-brand-900" textColor="text-gold-400" speed={32} />
-      <div className="max-w-full px-4 sm:px-6 py-8 pb-16">
+      <div className="max-w-7xl mx-auto px-6 py-8">
 
         {/* Welcome */}
         <div className="relative overflow-hidden bg-gradient-to-br from-brand-800 via-brand-700 to-blue-800 rounded-3xl p-8 mb-8 shadow-2xl">
@@ -549,7 +367,9 @@ export default function Dashboard() {
           {ENTREPRENEUR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
         </div>
 
-        <InvestorScrollSection />
+        <div className="mb-8">
+          <DealFlowPipeline />
+        </div>
 
         {(() => {
           const mySpvs = spvs.filter(s => myPitchIds.includes(s.pitch_id)).slice(0, 3)
@@ -598,8 +418,7 @@ export default function Dashboard() {
     </div>
   ) : (
     <div>
-      <ScrollingBanner items={INVESTOR_ADS} bgColor="bg-gradient-to-r from-gold-600 to-orange-500" textColor="text-white" speed={32} />
-      <div className="max-w-full px-4 sm:px-6 py-8 pb-16">
+      <div className="max-w-7xl mx-auto px-6 py-8">
 
         <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-brand-900 rounded-3xl p-8 mb-8 shadow-2xl">
           <div className="absolute top-0 right-0 w-72 h-72 bg-gold-400 opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 blur-2xl pointer-events-none" />
@@ -624,7 +443,9 @@ export default function Dashboard() {
           {INVESTOR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
         </div>
 
-        <DealFlowSection />
+        <div className="mb-8">
+          <DealFlowPipeline />
+        </div>
 
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
@@ -675,22 +496,18 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* 3-column layout */}
-      <div className="flex min-h-[calc(100vh-64px)]">
-        <PitchSideColumn />
-        <main className="flex-1 min-w-0 overflow-x-hidden">
-          {mainContent}
-        </main>
-        <InvestorSideColumn />
-      </div>
-
-      {/* Live activity bottom strip */}
-      <LiveActivityStrip />
+      <main className="bg-gray-50 min-h-[calc(100vh-64px)]">
+        {mainContent}
+      </main>
 
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scroll-left {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
         }
       `}</style>
     </>

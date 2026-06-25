@@ -210,3 +210,23 @@ class SPVCommitment(Base):
 
     spv      = relationship("SPV", back_populates="commitments")
     investor = relationship("User")
+
+
+class AuditReport(Base):
+    __tablename__ = "audit_reports"
+
+    id                = Column(Integer, primary_key=True, index=True)
+    pitch_id          = Column(Integer, ForeignKey("pitches.id"), nullable=False, unique=True)
+    auditor_id        = Column(Integer, ForeignKey("users.id"), nullable=False)
+    verdict           = Column(String, nullable=False, default="pending")
+    score             = Column(Float, nullable=True)
+    risk_level        = Column(String, nullable=False, default="medium")
+    executive_summary = Column(Text, nullable=True)
+    findings          = Column(Text, nullable=True)
+    recommendations   = Column(Text, nullable=True)
+    strengths         = Column(Text, nullable=True)
+    concerns          = Column(Text, nullable=True)
+    audited_at        = Column(DateTime(timezone=True), server_default=func.now())
+
+    pitch   = relationship("Pitch", backref="audit_report")
+    auditor = relationship("User")

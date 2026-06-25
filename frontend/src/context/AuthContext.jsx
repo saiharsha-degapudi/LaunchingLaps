@@ -16,6 +16,10 @@ const DEMO_USERS = {
     id: 11, full_name: 'Audit Team', email: 'audit@launchinglaps.com',
     role: 'audit', bio: 'LaunchingLaps internal audit team.', is_active: true,
   },
+  'admin@launchinglaps.com': {
+    id: 99, full_name: 'LL Admin', email: 'admin@launchinglaps.com',
+    role: 'admin', bio: 'LaunchingLaps super admin.', is_active: true,
+  },
 }
 
 export function AuthProvider({ children }) {
@@ -39,7 +43,7 @@ export function AuthProvider({ children }) {
       return data.user
     } catch (err) {
       // Offline fallback for demo accounts only
-      if (DEMO_USERS[email] && password === 'password123') {
+      if (DEMO_USERS[email] && (password === 'password123' || password === 'admin123')) {
         const demoUser = DEMO_USERS[email]
         const fakeToken = 'demo-token-' + demoUser.id
         localStorage.setItem('ll_token', fakeToken)
