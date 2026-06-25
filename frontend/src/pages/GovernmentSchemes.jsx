@@ -943,345 +943,343 @@ export default function GovernmentSchemes() {
   const schemes = filterType === 'all' ? allSchemes : allSchemes.filter(s => s.type === filterType)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="bg-zinc-50 min-h-screen">
+      <div className="max-w-6xl mx-auto px-6 py-8">
 
-      {/* PAGE HEADER */}
-      <div className="mb-10">
-        <div className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 text-xs font-bold px-3 py-1.5 rounded-full border border-brand-200 mb-3 uppercase tracking-widest">
-          🏛️ Government Schemes Portal
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-brand-800 mb-2">
-          Government Schemes & Policies
-        </h1>
-        <p className="text-gray-500 text-base max-w-2xl">
-          All active government-approved funding schemes, policies, and programs for entrepreneurs — state-specific and central government schemes with direct application links.
-        </p>
-      </div>
-
-      {/* STEP 1 — COUNTRY SCROLLER */}
-      <div className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-7 h-7 rounded-full bg-brand-800 text-white text-xs font-black flex items-center justify-center">1</div>
-          <h2 className="text-lg font-black text-brand-800">Select Your Country</h2>
-          {selectedCountry && (
-            <span className="text-sm text-gray-400 font-medium">
-              → {selectedCountry.flag} {selectedCountry.name}
-            </span>
-          )}
+        {/* PAGE HEADER */}
+        <div className="mb-8">
+          <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest mb-2">Government Schemes Portal</p>
+          <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
+            Government Schemes &amp; Policies
+          </h1>
+          <p className="text-sm text-zinc-500 mt-1 max-w-2xl">
+            All active government-approved funding schemes, policies, and programs for entrepreneurs — state-specific and central government schemes with direct application links.
+          </p>
         </div>
 
-        <div className="overflow-x-auto pb-3 -mx-1 px-1">
-          <div className="flex gap-3 w-max">
-            {COUNTRIES.map(country => (
-              <button
-                key={country.code}
-                onClick={() => handleCountrySelect(country)}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:scale-105 whitespace-nowrap ${
-                  selectedCountry?.code === country.code
-                    ? 'bg-brand-800 text-white border-brand-800 shadow-lg shadow-brand-800/20'
-                    : 'bg-white border-gray-200 text-gray-700 hover:border-brand-400 hover:text-brand-800'
-                }`}
-              >
-                <span className="text-lg">{country.flag}</span>
-                <span>{country.name}</span>
-                {country.hasData && (
-                  <span className="w-2 h-2 bg-green-400 rounded-full" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-        <p className="text-xs text-gray-400 mt-2">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="w-2 h-2 bg-green-400 rounded-full inline-block" /> Green dot = schemes available
-          </span>
-        </p>
-      </div>
-
-      {/* STEP 2 — STATE / COMING SOON */}
-      {selectedCountry && (
-        <div ref={stateRef} className="mb-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-7 h-7 rounded-full bg-brand-800 text-white text-xs font-black flex items-center justify-center">2</div>
-            <h2 className="text-lg font-black text-brand-800">
-              {selectedCountry.hasData ? 'Select Your State' : selectedCountry.name + ' — Schemes'}
-            </h2>
-            {selectedState && (
-              <span className="text-sm text-gray-400 font-medium">→ {selectedState.name}</span>
+        {/* STEP 1 — COUNTRY SCROLLER */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-[10px] font-semibold flex items-center justify-center flex-shrink-0">1</span>
+            <p className="text-sm font-semibold text-zinc-900">Select Your Country</p>
+            {selectedCountry && (
+              <span className="text-xs text-zinc-400">
+                — {selectedCountry.flag} {selectedCountry.name}
+              </span>
             )}
           </div>
 
-          {selectedCountry.hasData ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              {INDIA_STATES.map(state => (
+          <div className="overflow-x-auto pb-3">
+            <div className="flex gap-2 w-max">
+              {COUNTRIES.map(country => (
                 <button
-                  key={state.code}
-                  onClick={() => handleStateSelect(state)}
-                  className={`relative overflow-hidden rounded-2xl text-left transition-all hover:scale-[1.02] hover:shadow-2xl group ${
-                    selectedState?.code === state.code ? 'ring-4 ring-brand-500 ring-offset-2 shadow-2xl scale-[1.02]' : 'shadow-md'
+                  key={country.code}
+                  onClick={() => handleCountrySelect(country)}
+                  className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${
+                    selectedCountry?.code === country.code
+                      ? 'bg-zinc-900 text-white border-zinc-900'
+                      : 'bg-white border-zinc-200 text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50'
                   }`}
                 >
-                  <div className="relative h-44">
-                    <img
-                      src={state.image}
-                      alt={state.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className={`absolute inset-0 bg-gradient-to-t ${state.color} opacity-70`} />
-                    <div className="absolute inset-0 p-4 flex flex-col justify-end text-white">
-                      <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">{state.capital} · Capital</p>
-                      <h3 className="text-xl font-black leading-tight">{state.name}</h3>
-                      <p className="text-xs opacity-80 mt-1">{state.tagline}</p>
-                    </div>
-                    {selectedState?.code === state.code && (
-                      <div className="absolute top-3 right-3 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md">
-                        <svg className="w-4 h-4 text-brand-800" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <div className="bg-white px-4 py-3 border-t border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-bold text-brand-800">
-                        {SCHEMES[state.code]?.length || 0} Schemes Available
-                      </span>
-                      <span className="text-xs text-brand-600 font-semibold group-hover:translate-x-1 transition-transform inline-block">Explore →</span>
-                    </div>
-                  </div>
+                  <span>{country.flag}</span>
+                  <span>{country.name}</span>
+                  {country.hasData && (
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  )}
                 </button>
               ))}
             </div>
-          ) : (
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200 p-10 text-center">
-              <div className="text-6xl mb-4">{selectedCountry.flag}</div>
-              <h3 className="text-xl font-black text-gray-700 mb-2">Coming Soon for {selectedCountry.name}</h3>
-              <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
-                We're actively adding government schemes and policies for {selectedCountry.name}. Be the first to know when we go live.
+          </div>
+          <p className="text-xs text-zinc-400 mt-2 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block" />
+            Green dot = schemes available
+          </p>
+        </div>
+
+        {/* STEP 2 — STATE / COMING SOON */}
+        {selectedCountry && (
+          <div ref={stateRef} className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-[10px] font-semibold flex items-center justify-center flex-shrink-0">2</span>
+              <p className="text-sm font-semibold text-zinc-900">
+                {selectedCountry.hasData ? 'Select Your State' : selectedCountry.name + ' — Schemes'}
               </p>
-              <a
-                href={`https://wa.me/+916300000000?text=Notify me when schemes for ${selectedCountry.name} are added on LaunchingLaps`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-brand-800 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl transition-colors text-sm"
-              >
-                🔔 Notify Me When Available
-              </a>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* STEP 3 — SCHEMES GRID */}
-      {selectedState && allSchemes.length > 0 && (
-        <div ref={schemeRef} className="mb-10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-full bg-brand-800 text-white text-xs font-black flex items-center justify-center">3</div>
-              <h2 className="text-lg font-black text-brand-800">
-                {selectedState.name} — Active Government Schemes
-              </h2>
-              <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full border border-green-200">
-                {schemes.length} of {allSchemes.length}
-              </span>
+              {selectedState && (
+                <span className="text-xs text-zinc-400">— {selectedState.name}</span>
+              )}
             </div>
 
-            {/* Filter tabs */}
-            <div className="flex gap-2">
-              {[
-                { key: 'all', label: `All (${allSchemes.length})` },
-                { key: 'state', label: `🏛️ State (${allSchemes.filter(s => s.type === 'state').length})` },
-                { key: 'central', label: `🇮🇳 Central (${allSchemes.filter(s => s.type === 'central').length})` },
-              ].map(tab => (
-                <button
-                  key={tab.key}
-                  onClick={() => { setFilterType(tab.key); setSelectedScheme(null) }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    filterType === tab.key
-                      ? 'bg-brand-800 text-white shadow'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:border-brand-400'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="overflow-x-auto pb-4 -mx-1 px-1">
-            <div className="flex gap-4 w-max">
-              {schemes.map(scheme => (
-                <button
-                  key={scheme.id}
-                  onClick={() => setSelectedScheme(scheme)}
-                  className={`flex-shrink-0 w-72 text-left rounded-2xl border transition-all hover:shadow-xl hover:-translate-y-1 group overflow-hidden ${
-                    selectedScheme?.id === scheme.id
-                      ? 'border-brand-500 ring-2 ring-brand-400 shadow-xl'
-                      : 'border-gray-100 bg-white shadow-sm'
-                  }`}
-                >
-                  <div className={`p-5 ${selectedScheme?.id === scheme.id ? 'bg-brand-50' : 'bg-white'}`}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="text-3xl">{scheme.badge}</div>
-                      <div className="flex flex-col items-end gap-1.5">
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide bg-green-100 text-green-700 border border-green-200">
-                          {scheme.status}
+            {selectedCountry.hasData ? (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {INDIA_STATES.map(state => (
+                  <button
+                    key={state.code}
+                    onClick={() => handleStateSelect(state)}
+                    className={`relative overflow-hidden rounded-xl text-left transition-all hover:shadow-md group ${
+                      selectedState?.code === state.code
+                        ? 'ring-2 ring-zinc-900 ring-offset-2 shadow-md'
+                        : 'shadow-sm'
+                    }`}
+                  >
+                    <div className="relative h-40">
+                      <img
+                        src={state.image}
+                        alt={state.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className={`absolute inset-0 bg-gradient-to-t ${state.color} opacity-60`} />
+                      <div className="absolute inset-0 p-4 flex flex-col justify-end text-white">
+                        <p className="text-[10px] font-medium uppercase tracking-widest opacity-80 mb-0.5">{state.capital} · Capital</p>
+                        <h3 className="text-base font-semibold leading-tight">{state.name}</h3>
+                        <p className="text-xs opacity-75 mt-0.5">{state.tagline}</p>
+                      </div>
+                      {selectedState?.code === state.code && (
+                        <div className="absolute top-3 right-3 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow">
+                          <svg className="w-3.5 h-3.5 text-zinc-900" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-white px-4 py-3 border border-t-0 border-zinc-200 rounded-b-xl">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-zinc-700">
+                          {SCHEMES[state.code]?.length || 0} Schemes
                         </span>
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
-                          scheme.type === 'state'
-                            ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                            : 'bg-orange-100 text-orange-700 border border-orange-200'
-                        }`}>
-                          {scheme.type === 'state' ? '🏛️ State' : '🇮🇳 Central'}
-                        </span>
+                        <span className="text-xs text-zinc-500 group-hover:translate-x-1 transition-transform inline-block">Explore →</span>
                       </div>
                     </div>
-                    <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest mb-1.5">{scheme.category}</p>
-                    <h3 className="font-black text-brand-800 text-sm leading-snug mb-2 line-clamp-2">{scheme.name}</h3>
-                    <p className="text-gray-500 text-xs leading-relaxed line-clamp-3">{scheme.description}</p>
-                  </div>
-                  <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-xs text-gray-400 font-medium">Since {scheme.launched}</span>
-                    <span className="text-xs font-bold text-brand-700 group-hover:translate-x-1 transition-transform inline-block">
-                      {selectedScheme?.id === scheme.id ? 'Selected ✓' : 'View Details →'}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-gray-400 mt-2">← Scroll horizontally to see all schemes →</p>
-        </div>
-      )}
-
-      {/* STEP 4 — SCHEME DETAIL PANEL */}
-      {selectedScheme && (
-        <div className="rounded-3xl overflow-hidden shadow-2xl border border-gray-100 mb-10">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-brand-900 via-brand-800 to-blue-900 px-8 py-7 text-white">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-4xl">{selectedScheme.badge}</span>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-brand-200 text-xs font-bold uppercase tracking-widest">{selectedScheme.category} · {selectedScheme.ministry}</p>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                        selectedScheme.type === 'state'
-                          ? 'bg-blue-500/30 text-blue-200 border border-blue-400/40'
-                          : 'bg-orange-500/30 text-orange-200 border border-orange-400/40'
-                      }`}>
-                        {selectedScheme.type === 'state' ? '🏛️ State Government Scheme' : '🇮🇳 Central Government Scheme'}
-                      </span>
-                    </div>
-                    <span className="inline-flex items-center gap-1.5 bg-green-500/20 border border-green-400/40 text-green-300 text-xs font-bold px-2.5 py-1 rounded-full mt-1">
-                      <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" /> {selectedScheme.status} · Since {selectedScheme.launched}
-                    </span>
-                  </div>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black leading-tight">{selectedScheme.name}</h2>
-                <p className="text-blue-200 text-sm mt-2 max-w-2xl leading-relaxed">{selectedScheme.description}</p>
+                  </button>
+                ))}
               </div>
-              <button
-                onClick={() => setSelectedScheme(null)}
-                className="flex-shrink-0 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors text-lg font-light"
-              >×</button>
-            </div>
-          </div>
-
-          {/* Detail content */}
-          <div className="bg-white p-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-
-              {/* Eligibility */}
-              <div>
-                <h3 className="font-black text-brand-800 text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-brand-500 rounded-full" /> Eligibility
-                </h3>
-                <ul className="space-y-2.5">
-                  {selectedScheme.eligibility.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                      <svg className="w-4 h-4 text-brand-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Benefits */}
-              <div>
-                <h3 className="font-black text-brand-800 text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-gold-500 rounded-full" /> Key Benefits
-                </h3>
-                <ul className="space-y-2.5">
-                  {selectedScheme.benefits.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                      <span className="text-gold-500 font-black flex-shrink-0 mt-0.5">★</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Documents Required */}
-              <div>
-                <h3 className="font-black text-brand-800 text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full" /> Documents Required
-                </h3>
-                <ul className="space-y-2.5">
-                  {selectedScheme.documents.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                      <span className="text-blue-400 flex-shrink-0 mt-0.5">📄</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-100">
-              <a
-                href={selectedScheme.applyLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 bg-gradient-to-r from-brand-800 to-brand-700 hover:from-brand-700 hover:to-brand-600 text-white font-black py-4 px-8 rounded-xl text-center transition-all hover:scale-[1.02] shadow-lg shadow-brand-800/20 flex items-center justify-center gap-3"
-              >
-                <span>Apply / Register Now</span>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
-              {selectedScheme.officialLink && selectedScheme.officialLink !== selectedScheme.applyLink && (
+            ) : (
+              <div className="bg-white border border-zinc-200 rounded-xl p-10 text-center">
+                <div className="text-5xl mb-4">{selectedCountry.flag}</div>
+                <h3 className="text-base font-semibold text-zinc-900 mb-2">Coming Soon for {selectedCountry.name}</h3>
+                <p className="text-sm text-zinc-500 max-w-md mx-auto mb-6">
+                  We're actively adding government schemes and policies for {selectedCountry.name}. Be the first to know when we go live.
+                </p>
                 <a
-                  href={selectedScheme.officialLink}
+                  href={`https://wa.me/+916300000000?text=Notify me when schemes for ${selectedCountry.name} are added on LaunchingLaps`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-bold py-4 px-6 rounded-xl transition-colors text-sm"
+                  className="inline-flex items-center gap-2 bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                 >
-                  🌐 Official Portal
+                  Notify Me When Available
                 </a>
-              )}
-              <button
-                onClick={() => setSelectedScheme(null)}
-                className="flex items-center justify-center gap-2 border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold py-4 px-6 rounded-xl transition-colors text-sm"
-              >
-                ← Back to Schemes
-              </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STEP 3 — SCHEMES GRID */}
+        {selectedState && allSchemes.length > 0 && (
+          <div ref={schemeRef} className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-zinc-900 text-white text-[10px] font-semibold flex items-center justify-center flex-shrink-0">3</span>
+                <p className="text-sm font-semibold text-zinc-900">
+                  {selectedState.name} — Active Government Schemes
+                </p>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
+                  {schemes.length} of {allSchemes.length}
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                {[
+                  { key: 'all', label: `All (${allSchemes.length})` },
+                  { key: 'state', label: `State (${allSchemes.filter(s => s.type === 'state').length})` },
+                  { key: 'central', label: `Central (${allSchemes.filter(s => s.type === 'central').length})` },
+                ].map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => { setFilterType(tab.key); setSelectedScheme(null) }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      filterType === tab.key
+                        ? 'bg-zinc-900 text-white'
+                        : 'border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Disclaimer */}
-            <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4">
-              <p className="text-xs text-amber-700 leading-relaxed">
-                <strong>Disclaimer:</strong> Scheme information is sourced from official government portals and updated periodically. Eligibility criteria, benefit amounts, and deadlines are subject to change. Always verify the latest terms on the official government website before applying. LaunchingLaps is not affiliated with any government body.
-              </p>
+            <div className="overflow-x-auto pb-4">
+              <div className="flex gap-3 w-max">
+                {schemes.map(scheme => (
+                  <button
+                    key={scheme.id}
+                    onClick={() => setSelectedScheme(scheme)}
+                    className={`flex-shrink-0 w-68 text-left rounded-xl border transition-all hover:shadow-sm group overflow-hidden ${
+                      selectedScheme?.id === scheme.id
+                        ? 'border-zinc-900 ring-1 ring-zinc-900'
+                        : 'border-zinc-200 bg-white'
+                    }`}
+                    style={{ width: '272px' }}
+                  >
+                    <div className={`p-4 ${selectedScheme?.id === scheme.id ? 'bg-zinc-50' : 'bg-white'}`}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-2xl">{scheme.badge}</div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-200">
+                            {scheme.status}
+                          </span>
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                            scheme.type === 'state'
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : 'bg-orange-50 text-orange-700 border border-orange-200'
+                          }`}>
+                            {scheme.type === 'state' ? 'State' : 'Central'}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-medium text-zinc-400 uppercase tracking-widest mb-1">{scheme.category}</p>
+                      <h3 className="text-sm font-semibold text-zinc-900 leading-snug mb-2 line-clamp-2">{scheme.name}</h3>
+                      <p className="text-xs text-zinc-500 leading-relaxed line-clamp-3">{scheme.description}</p>
+                    </div>
+                    <div className="px-4 py-3 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between">
+                      <span className="text-xs text-zinc-400">Since {scheme.launched}</span>
+                      <span className="text-xs font-medium text-zinc-600 group-hover:translate-x-1 transition-transform inline-block">
+                        {selectedScheme?.id === scheme.id ? 'Selected' : 'View →'}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-zinc-400 mt-2">Scroll horizontally to see all schemes</p>
+          </div>
+        )}
+
+        {/* STEP 4 — SCHEME DETAIL PANEL */}
+        {selectedScheme && (
+          <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden mb-8">
+            {/* Header */}
+            <div className="p-6 border-b border-zinc-100">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="text-3xl flex-shrink-0">{selectedScheme.badge}</div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <span className="text-xs text-zinc-400 font-medium">{selectedScheme.category} · {selectedScheme.ministry}</span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${
+                        selectedScheme.type === 'state'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                          : 'bg-orange-50 text-orange-700 border border-orange-200'
+                      }`}>
+                        {selectedScheme.type === 'state' ? 'State Government' : 'Central Government'}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                        {selectedScheme.status} · Since {selectedScheme.launched}
+                      </span>
+                    </div>
+                    <h2 className="text-xl font-semibold text-zinc-900 leading-tight">{selectedScheme.name}</h2>
+                    <p className="text-sm text-zinc-500 mt-1.5 leading-relaxed">{selectedScheme.description}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedScheme(null)}
+                  className="flex-shrink-0 w-8 h-8 rounded-lg bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center transition"
+                >
+                  <svg className="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Detail content */}
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+                {/* Eligibility */}
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Eligibility</p>
+                  <ul className="space-y-2">
+                    {selectedScheme.eligibility.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-zinc-600">
+                        <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Benefits */}
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Key Benefits</p>
+                  <ul className="space-y-2">
+                    {selectedScheme.benefits.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-zinc-600">
+                        <span className="text-blue-500 flex-shrink-0 mt-0.5 text-xs font-bold">+</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Documents Required */}
+                <div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Documents Required</p>
+                  <ul className="space-y-2">
+                    {selectedScheme.documents.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-zinc-600">
+                        <span className="text-zinc-400 flex-shrink-0 mt-0.5 text-xs">—</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-5 border-t border-zinc-100">
+                <a
+                  href={selectedScheme.applyLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 px-6 rounded-lg text-center transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>Apply / Register Now</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+                {selectedScheme.officialLink && selectedScheme.officialLink !== selectedScheme.applyLink && (
+                  <a
+                    href={selectedScheme.officialLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-sm font-medium py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    Official Portal
+                  </a>
+                )}
+                <button
+                  onClick={() => setSelectedScheme(null)}
+                  className="border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-sm font-medium py-2.5 px-6 rounded-lg transition-colors"
+                >
+                  Back to Schemes
+                </button>
+              </div>
+
+              {/* Disclaimer */}
+              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  <strong>Disclaimer:</strong> Scheme information is sourced from official government portals and updated periodically. Eligibility criteria, benefit amounts, and deadlines are subject to change. Always verify the latest terms on the official government website before applying. LaunchingLaps is not affiliated with any government body.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
+      </div>
     </div>
   )
 }

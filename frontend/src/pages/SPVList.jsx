@@ -18,14 +18,13 @@ export default function SPVList() {
 
   const [activeTab, setActiveTab] = useState('')
   const [spvs, setSpvs] = useState([])
-  const [myPitchIds, setMyPitchIds] = useState(null) // null = not loaded yet
+  const [myPitchIds, setMyPitchIds] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // For entrepreneurs, fetch their pitches to filter SPVs
   useEffect(() => {
     if (!isEntrepreneur) {
-      setMyPitchIds(false) // not needed
+      setMyPitchIds(false)
       return
     }
     api.get('/pitches/')
@@ -33,7 +32,6 @@ export default function SPVList() {
       .catch(() => setMyPitchIds([]))
   }, [isEntrepreneur])
 
-  // Fetch SPVs when tab changes
   useEffect(() => {
     setLoading(true)
     setError('')
@@ -44,7 +42,6 @@ export default function SPVList() {
       .finally(() => setLoading(false))
   }, [activeTab])
 
-  // For entrepreneurs, filter to only SPVs on their pitches
   const visibleSpvs = isEntrepreneur && Array.isArray(myPitchIds)
     ? spvs.filter(s => myPitchIds.includes(s.pitch_id))
     : spvs
@@ -52,90 +49,92 @@ export default function SPVList() {
   const stillLoading = loading || (isEntrepreneur && myPitchIds === null)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-black text-brand-800">
-            {isEntrepreneur ? 'Syndicates Funding Your Pitch' : 'Active Syndicate Opportunities'}
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {isEntrepreneur
-              ? 'Investors can pool capital through a syndicate to back your startup.'
-              : 'Join or create a syndicate to invest in high-potential startups.'}
-          </p>
-        </div>
-        {isInvestor && (
-          <Link
-            to="/lead-spv"
-            className="flex-shrink-0 bg-gold-500 hover:bg-gold-600 text-white font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
-          >
-            + Create Syndicate
-          </Link>
-        )}
-      </div>
-
-      {/* Filter tabs */}
-      <div className="flex gap-2 mb-8 flex-wrap">
-        {TABS.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === tab.key
-                ? 'bg-brand-800 text-white shadow'
-                : 'bg-white border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-800'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      {stillLoading ? (
-        <div className="flex items-center justify-center py-24">
-          <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-700 rounded-full animate-spin" />
-        </div>
-      ) : error ? (
-        <div className="text-center py-20">
-          <p className="text-red-500 font-semibold">{error}</p>
-          <button
-            onClick={() => setActiveTab(activeTab)}
-            className="mt-4 text-brand-700 underline text-sm"
-          >
-            Retry
-          </button>
-        </div>
-      ) : visibleSpvs.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
-          <div className="text-5xl mb-4">🏦</div>
-          <h3 className="text-xl font-black text-brand-800 mb-2">No syndicates found</h3>
-          {isEntrepreneur ? (
-            <p className="text-gray-500 text-sm max-w-md mx-auto">
-              Investors can form a syndicate to fund your startup. Submit a pitch to get started.
+    <div className="bg-zinc-50 min-h-screen">
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Page header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
+              {isEntrepreneur ? 'Syndicates Funding Your Pitch' : 'Syndicate Opportunities'}
+            </h1>
+            <p className="text-sm text-zinc-500 mt-1">
+              {isEntrepreneur
+                ? 'Investors can pool capital through a syndicate to back your startup.'
+                : 'Join or create a syndicate to invest in high-potential startups.'}
             </p>
-          ) : (
-            <p className="text-gray-500 text-sm max-w-md mx-auto">
-              No syndicates match the current filter. Try another tab or create a new one.
-            </p>
-          )}
+          </div>
           {isInvestor && (
             <Link
               to="/lead-spv"
-              className="inline-block mt-6 bg-gold-500 hover:bg-gold-600 text-white font-bold px-6 py-3 rounded-xl transition-colors"
+              className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
             >
-              + Create the First Syndicate
+              + Create Syndicate
             </Link>
           )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {visibleSpvs.map(spv => (
-            <SPVCard key={spv.id} spv={spv} />
+
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-6 flex-wrap">
+          {TABS.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === tab.key
+                  ? 'bg-zinc-900 text-white'
+                  : 'border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
+              }`}
+            >
+              {tab.label}
+            </button>
           ))}
         </div>
-      )}
+
+        {/* Content */}
+        {stillLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="w-8 h-8 border-2 border-zinc-200 border-t-zinc-700 rounded-full animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center">
+            <p className="text-sm text-red-600">{error}</p>
+            <button
+              onClick={() => setActiveTab(activeTab)}
+              className="mt-4 text-sm text-zinc-600 underline"
+            >
+              Retry
+            </button>
+          </div>
+        ) : visibleSpvs.length === 0 ? (
+          <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center">
+            <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-zinc-900 mb-1">No syndicates found</h3>
+            <p className="text-sm text-zinc-500 max-w-sm mx-auto">
+              {isEntrepreneur
+                ? 'Investors can form a syndicate to fund your startup. Submit a pitch to get started.'
+                : 'No syndicates match the current filter. Try another tab or create a new one.'}
+            </p>
+            {isInvestor && (
+              <Link
+                to="/lead-spv"
+                className="inline-block mt-6 bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                + Create the First Syndicate
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {visibleSpvs.map(spv => (
+              <SPVCard key={spv.id} spv={spv} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

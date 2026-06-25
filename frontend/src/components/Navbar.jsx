@@ -1,20 +1,20 @@
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState, useRef, useEffect } from 'react'
 
 function MoreDropdown({ links, onClose }) {
   const ref = useRef(null)
   useEffect(() => {
-    function handler(e) { if (ref.current && !ref.current.contains(e.target)) onClose() }
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose() }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [onClose])
 
   return (
-    <div ref={ref} className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 z-50 overflow-hidden">
+    <div ref={ref} className="absolute left-0 top-full mt-1 w-44 bg-white border border-zinc-200 rounded-lg shadow-lg shadow-zinc-100 py-1 z-50">
       {links.map(({ to, label }) => (
         <Link key={to} to={to} onClick={onClose}
-          className="block px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-brand-800 transition-colors">
+          className="block px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors">
           {label}
         </Link>
       ))}
@@ -30,92 +30,85 @@ export default function Navbar() {
 
   function handleLogout() { logout(); navigate('/') }
 
-  const linkClass = ({ isActive }) =>
-    isActive
-      ? 'text-gold-400 font-semibold border-b-2 border-gold-400 pb-0.5 whitespace-nowrap'
-      : 'text-brand-100 hover:text-white transition-colors whitespace-nowrap'
-
   const primaryLinks = user?.role === 'entrepreneur'
     ? [
         { to: '/dashboard', label: 'Dashboard' },
-        { to: '/pitches', label: 'Pitches' },
-        { to: '/spvs', label: 'Syndicates' },
+        { to: '/pitches',   label: 'Pitches' },
+        { to: '/spvs',      label: 'Syndicates' },
         { to: '/investors', label: 'Investors' },
       ]
     : user?.role === 'investor'
     ? [
         { to: '/dashboard', label: 'Dashboard' },
-        { to: '/pitches', label: 'Deal Flow' },
-        { to: '/spvs', label: 'Syndicates' },
+        { to: '/pitches',   label: 'Deal Flow' },
+        { to: '/spvs',      label: 'Syndicates' },
         { to: '/investors', label: 'Network' },
       ]
     : []
 
   const moreLinks = user?.role === 'entrepreneur'
     ? [
-        { to: '/education', label: 'Learn' },
-        { to: '/community', label: 'Community' },
-        { to: '/messages', label: 'Messages' },
-        { to: '/government-schemes', label: 'Govt Schemes' },
+        { to: '/education',           label: 'Learn' },
+        { to: '/community',           label: 'Community' },
+        { to: '/messages',            label: 'Messages' },
+        { to: '/government-schemes',  label: 'Govt Schemes' },
       ]
     : user?.role === 'investor'
     ? [
-        { to: '/lead-spv', label: 'Create Syndicate' },
-        { to: '/education', label: 'Learn' },
-        { to: '/community', label: 'Community' },
-        { to: '/messages', label: 'Messages' },
-        { to: '/government-schemes', label: 'Govt Schemes' },
+        { to: '/lead-spv',            label: 'Create Syndicate' },
+        { to: '/education',           label: 'Learn' },
+        { to: '/community',           label: 'Community' },
+        { to: '/messages',            label: 'Messages' },
+        { to: '/government-schemes',  label: 'Govt Schemes' },
       ]
     : []
 
-  const allMobileLinks = [...primaryLinks, ...moreLinks]
+  const navLink = ({ isActive }) =>
+    `px-3 py-1.5 rounded-md text-sm transition-colors ${
+      isActive
+        ? 'text-zinc-900 font-medium bg-zinc-100'
+        : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
+    }`
 
   return (
-    <nav className="bg-brand-800 shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-6">
+    <nav className="bg-white border-b border-zinc-100 sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="flex items-center justify-between h-14 gap-6">
 
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
-            <span className="text-gold-400 text-xl font-black tracking-tight">
-              Launching<span className="text-white">Laps</span>
+          <Link to="/" className="flex-shrink-0 select-none">
+            <span className="text-zinc-900 text-[15px] font-semibold tracking-tight">
+              Launching<span className="text-blue-600">Laps</span>
             </span>
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-1 flex-1 text-sm">
-            {isAuthenticated ? (
+          {/* Desktop primary links */}
+          <div className="hidden md:flex items-center gap-0.5 flex-1">
+            {isAuthenticated && (
               <>
-                {user?.role === 'admin' ? (
-                  <NavLink to="/admin" className={linkClass}>Admin Dashboard</NavLink>
-                ) : user?.role === 'audit' ? (
-                  <NavLink to="/audit" className={linkClass}>Audit Dashboard</NavLink>
-                ) : (
+                {user?.role === 'admin' && (
+                  <NavLink to="/admin" className={navLink}>Admin</NavLink>
+                )}
+                {user?.role === 'audit' && (
+                  <NavLink to="/audit" className={navLink}>Audit Dashboard</NavLink>
+                )}
+                {(user?.role === 'entrepreneur' || user?.role === 'investor') && (
                   <>
-                    {/* Primary links */}
-                    <div className="flex items-center gap-1">
-                      {primaryLinks.map(({ to, label }) => (
-                        <NavLink key={to} to={to} className={({ isActive }) =>
-                          `px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                            isActive
-                              ? 'bg-white/10 text-white'
-                              : 'text-brand-100 hover:bg-white/8 hover:text-white'
-                          }`
-                        }>{label}</NavLink>
-                      ))}
-                    </div>
+                    {primaryLinks.map(({ to, label }) => (
+                      <NavLink key={to} to={to} className={navLink}>{label}</NavLink>
+                    ))}
 
-                    {/* More dropdown */}
                     {moreLinks.length > 0 && (
-                      <div className="relative ml-1">
+                      <div className="relative ml-0.5">
                         <button
                           onClick={() => setMoreOpen(v => !v)}
-                          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                            moreOpen ? 'bg-white/10 text-white' : 'text-brand-100 hover:bg-white/8 hover:text-white'
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors ${
+                            moreOpen ? 'text-zinc-900 bg-zinc-100' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
                           }`}
                         >
                           More
-                          <svg className={`w-3.5 h-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                          <svg className={`w-3 h-3 transition-transform ${moreOpen ? 'rotate-180' : ''}`}
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                           </svg>
                         </button>
@@ -125,46 +118,45 @@ export default function Navbar() {
                   </>
                 )}
               </>
-            ) : null}
+            )}
           </div>
 
-          {/* Right: user info + CTA */}
+          {/* Right side */}
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
             {isAuthenticated ? (
               <>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-white/15 border border-white/20 flex items-center justify-center text-white font-black text-sm">
-                    {user?.full_name?.[0] || '?'}
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-white text-[11px] font-semibold flex-shrink-0">
+                    {user?.full_name?.[0]?.toUpperCase() || '?'}
                   </div>
-                  <div className="text-right">
-                    <p className="text-white text-xs font-semibold leading-none">{user?.full_name?.split(' ')[0]}</p>
-                    <p className="text-gold-400 text-[10px] capitalize leading-none mt-0.5">{user?.role}</p>
+                  <div className="leading-none">
+                    <p className="text-zinc-900 text-[13px] font-medium">{user?.full_name?.split(' ')[0]}</p>
+                    <p className="text-zinc-400 text-[11px] capitalize mt-0.5">{user?.role}</p>
                   </div>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/15 transition-colors whitespace-nowrap"
-                >
+                <button onClick={handleLogout}
+                  className="text-xs text-zinc-500 hover:text-zinc-900 font-medium px-3 py-1.5 rounded-md border border-zinc-200 hover:bg-zinc-50 transition-colors">
                   Log out
                 </button>
               </>
             ) : (
               <>
                 <Link to="/login?type=entrepreneur"
-                  className="flex items-center gap-1.5 text-sm font-semibold text-brand-100 hover:text-white transition-colors">
-                  🚀 Entrepreneur
+                  className="text-sm text-zinc-600 hover:text-zinc-900 font-medium transition-colors">
+                  Sign in
                 </Link>
                 <Link to="/login?type=investor"
-                  className="flex items-center gap-1.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold px-4 py-2 rounded-lg transition text-sm">
-                  💼 Investor
+                  className="bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                  Get started
                 </Link>
               </>
             )}
           </div>
 
           {/* Mobile hamburger */}
-          <button className="md:hidden text-white flex-shrink-0" onClick={() => setMobileOpen(v => !v)} aria-label="Toggle menu">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button className="md:hidden text-zinc-500 hover:text-zinc-900 flex-shrink-0 transition-colors"
+            onClick={() => setMobileOpen(v => !v)} aria-label="Toggle menu">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {mobileOpen
                 ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
@@ -175,33 +167,36 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-brand-900 border-t border-brand-700 px-4 py-3 flex flex-col gap-1 text-sm">
+        <div className="md:hidden border-t border-zinc-100 bg-white px-6 py-4 flex flex-col gap-0.5">
           {isAuthenticated ? (
             <>
-              {user?.role === 'admin' ? (
-                <Link to="/admin" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 text-brand-100 hover:text-white font-medium">Admin Dashboard</Link>
-              ) : user?.role === 'audit' ? (
-                <Link to="/audit" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 text-brand-100 hover:text-white font-medium">Audit Dashboard</Link>
-              ) : (
-                allMobileLinks.map(({ to, label }) => (
-                  <Link key={to} to={to} onClick={() => setMobileOpen(false)}
-                    className="px-3 py-2.5 text-brand-100 hover:text-white hover:bg-white/8 rounded-lg font-medium transition-colors">
-                    {label}
-                  </Link>
-                ))
-              )}
-              <div className="border-t border-brand-700 mt-2 pt-2 flex items-center justify-between px-3">
+              {[...primaryLinks, ...moreLinks].map(({ to, label }) => (
+                <Link key={to} to={to} onClick={() => setMobileOpen(false)}
+                  className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-md transition-colors">
+                  {label}
+                </Link>
+              ))}
+              <div className="border-t border-zinc-100 mt-3 pt-3 flex items-center justify-between">
                 <div>
-                  <p className="text-white text-xs font-semibold">{user?.full_name}</p>
-                  <p className="text-gold-400 text-[10px] capitalize">{user?.role}</p>
+                  <p className="text-zinc-900 text-sm font-medium">{user?.full_name}</p>
+                  <p className="text-zinc-400 text-xs capitalize">{user?.role}</p>
                 </div>
-                <button onClick={handleLogout} className="text-xs text-red-400 hover:text-red-300 font-semibold">Log out</button>
+                <button onClick={handleLogout}
+                  className="text-sm text-zinc-500 hover:text-zinc-900 font-medium transition-colors">
+                  Log out
+                </button>
               </div>
             </>
           ) : (
             <>
-              <Link to="/login?type=entrepreneur" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 text-brand-100">🚀 Entrepreneur</Link>
-              <Link to="/login?type=investor" onClick={() => setMobileOpen(false)} className="px-3 py-2.5 text-gold-400 font-semibold">💼 Investor</Link>
+              <Link to="/login?type=entrepreneur" onClick={() => setMobileOpen(false)}
+                className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 rounded-md transition-colors">
+                Sign in as Entrepreneur
+              </Link>
+              <Link to="/login?type=investor" onClick={() => setMobileOpen(false)}
+                className="px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 rounded-md transition-colors">
+                Sign in as Investor
+              </Link>
             </>
           )}
         </div>

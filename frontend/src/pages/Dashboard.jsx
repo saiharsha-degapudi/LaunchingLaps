@@ -40,21 +40,21 @@ const INVESTOR_INSIGHTS = [
 ]
 
 const ENTREPRENEUR_QUICK_LINKS = [
-  { to: '/submit-pitch', emoji: '➕', label: 'Submit a Pitch', desc: 'Create and publish your investor pitch', gradient: 'from-brand-700 to-brand-900' },
-  { to: '/pitches', emoji: '📋', label: 'My Pitches', desc: 'Manage your pitches & track interest', gradient: 'from-blue-500 to-brand-700' },
-  { to: '/education', emoji: '🎓', label: 'Education', desc: '6 expert courses — free to access', gradient: 'from-green-500 to-teal-600' },
-  { to: '/community', emoji: '💬', label: 'Community', desc: 'Connect with fellow entrepreneurs', gradient: 'from-purple-500 to-pink-600' },
-  { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Replies from interested investors', gradient: 'from-gold-500 to-orange-500' },
-  { to: '/investors', emoji: '🔍', label: 'Find Investors', desc: 'Browse investor profiles & message them', gradient: 'from-red-500 to-rose-600' },
-  { to: '/government-schemes', emoji: '🏛️', label: 'Govt Schemes', desc: 'Explore government funding & policies', gradient: 'from-brand-700 to-brand-900' },
+  { to: '/submit-pitch', emoji: '➕', label: 'Submit a Pitch', desc: 'Create and publish your investor pitch' },
+  { to: '/pitches', emoji: '📋', label: 'My Pitches', desc: 'Manage pitches & track interest' },
+  { to: '/education', emoji: '🎓', label: 'Education', desc: '6 expert courses — free to access' },
+  { to: '/community', emoji: '💬', label: 'Community', desc: 'Connect with fellow entrepreneurs' },
+  { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Replies from interested investors' },
+  { to: '/investors', emoji: '🔍', label: 'Find Investors', desc: 'Browse investor profiles' },
+  { to: '/government-schemes', emoji: '🏛️', label: 'Govt Schemes', desc: 'Explore government funding' },
 ]
 
 const INVESTOR_QUICK_LINKS = [
-  { to: '/pitches', emoji: '🔍', label: 'Browse Pitches', desc: '6 active pitches from global founders', gradient: 'from-gold-500 to-orange-500' },
-  { to: '/investors', emoji: '👥', label: 'Investor Network', desc: 'Co-invest with fellow investors', gradient: 'from-brand-700 to-brand-900' },
-  { to: '/education', emoji: '🎓', label: 'Courses', desc: '6 courses incl. Due Diligence & Series A', gradient: 'from-green-500 to-teal-600' },
-  { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Your founder conversations', gradient: 'from-purple-500 to-pink-600' },
-  { to: '/community', emoji: '💬', label: 'Community', desc: '10+ posts on deals, legal & strategy', gradient: 'from-blue-500 to-cyan-600' },
+  { to: '/pitches', emoji: '🔍', label: 'Browse Pitches', desc: '6 active pitches from global founders' },
+  { to: '/investors', emoji: '👥', label: 'Investor Network', desc: 'Co-invest with fellow investors' },
+  { to: '/education', emoji: '🎓', label: 'Courses', desc: '6 courses incl. Due Diligence & Series A' },
+  { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Your founder conversations' },
+  { to: '/community', emoji: '💬', label: 'Community', desc: '10+ posts on deals, legal & strategy' },
 ]
 
 const DEAL_RANGES = [
@@ -110,15 +110,16 @@ function useVerticalScroll(items) {
 }
 
 // Shared UI Components
-function QuickLinkCard({ to, emoji, label, desc, gradient }) {
+function QuickLinkCard({ to, emoji, label, desc }) {
   return (
-    <Link to={to} className="group relative bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden flex flex-col gap-3">
-      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-xl shadow-md`}>
-        {emoji}
-      </div>
+    <Link
+      to={to}
+      className="group bg-white border border-zinc-200 rounded-xl p-5 hover:border-zinc-300 hover:shadow-sm transition-all flex flex-col gap-3"
+    >
+      <span className="text-xl">{emoji}</span>
       <div>
-        <p className="font-bold text-brand-800 text-sm">{label}</p>
-        <p className="text-gray-400 text-xs mt-0.5 leading-snug">{desc}</p>
+        <p className="text-sm font-semibold text-zinc-900">{label}</p>
+        <p className="text-xs text-zinc-400 mt-0.5 leading-snug">{desc}</p>
       </div>
     </Link>
   )
@@ -126,14 +127,16 @@ function QuickLinkCard({ to, emoji, label, desc, gradient }) {
 
 function InsightCard({ item }) {
   return (
-    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3">
+    <div className="bg-white border border-zinc-200 rounded-xl p-5 flex flex-col gap-3 hover:border-zinc-300 transition-colors">
       <div className="flex items-start justify-between">
-        <span className="text-2xl">{item.emoji}</span>
-        <span className="text-xs font-semibold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full">{item.tag}</span>
+        <span className="text-xl">{item.emoji}</span>
+        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
+          {item.tag}
+        </span>
       </div>
       <div>
-        <h3 className="font-bold text-brand-800 text-sm mb-1">{item.title}</h3>
-        <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+        <h3 className="text-base font-semibold text-zinc-900 mb-1">{item.title}</h3>
+        <p className="text-sm text-zinc-600 leading-relaxed">{item.desc}</p>
       </div>
     </div>
   )
@@ -148,30 +151,34 @@ function InvestorScrollCard({ inv }) {
   const minStr = `$${(inv.investment_min / 1_000).toFixed(0)}K`
 
   return (
-    <div className="w-72 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1">
-      <div className="bg-gradient-to-br from-brand-800 to-brand-900 p-5">
+    <div className="w-72 flex-shrink-0 bg-white border border-zinc-200 rounded-xl overflow-hidden hover:border-zinc-300 hover:shadow-sm transition-all">
+      <div className="bg-zinc-900 p-5">
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-full bg-white/15 border-2 border-white/20 flex items-center justify-center text-white font-black text-2xl flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
             {inv.user?.full_name?.[0] || 'I'}
           </div>
           <div className="min-w-0">
-            <p className="font-black text-white text-sm truncate">{inv.user?.full_name}</p>
-            <p className="text-blue-200 text-xs truncate">{inv.firm_name}</p>
-            {inv.location && <p className="text-blue-300/80 text-xs mt-0.5 truncate">📍 {inv.location}</p>}
+            <p className="font-semibold text-white text-sm truncate">{inv.user?.full_name}</p>
+            <p className="text-zinc-400 text-xs truncate">{inv.firm_name}</p>
+            {inv.location && <p className="text-zinc-500 text-xs mt-0.5 truncate">{inv.location}</p>}
           </div>
         </div>
       </div>
       <div className="p-4">
-        <div className="bg-gold-50 border border-gold-200 rounded-xl p-3 mb-3">
-          <p className="text-xs text-gray-400 font-medium mb-0.5">Invests</p>
-          <p className="font-black text-brand-800 text-sm">{minStr} – {maxStr}</p>
+        <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 mb-3">
+          <p className="text-xs text-zinc-400 font-medium mb-0.5">Investment Range</p>
+          <p className="font-semibold text-zinc-900 text-sm">{minStr} – {maxStr}</p>
         </div>
-        {inv.user?.bio && <p className="text-gray-500 text-xs leading-relaxed mb-3 line-clamp-2">{inv.user.bio}</p>}
+        {inv.user?.bio && <p className="text-zinc-600 text-xs leading-relaxed mb-3 line-clamp-2">{inv.user.bio}</p>}
         <div className="flex flex-wrap gap-1.5 mb-2">
-          {industries.map(ind => <span key={ind} className="text-xs bg-brand-100 text-brand-700 font-semibold px-2.5 py-0.5 rounded-full">{ind}</span>)}
+          {industries.map(ind => (
+            <span key={ind} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">{ind}</span>
+          ))}
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {stages.map(s => <span key={s} className="text-xs bg-green-100 text-green-700 font-semibold px-2.5 py-0.5 rounded-full capitalize">{s}</span>)}
+          {stages.map(s => (
+            <span key={s} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600 capitalize">{s}</span>
+          ))}
         </div>
       </div>
     </div>
@@ -188,18 +195,24 @@ function InvestorScrollSection() {
   items = [...items, ...items]
 
   return (
-    <div className="mb-10">
-      <div className="flex items-center justify-between mb-5">
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-xl font-black text-brand-800">Active Investors on Platform</h2>
-          <p className="text-gray-400 text-sm mt-0.5">{investors.length} verified investors actively looking for deals — hover to pause</p>
+          <h2 className="text-base font-semibold text-zinc-900">Active Investors on Platform</h2>
+          <p className="text-xs text-zinc-400 mt-0.5">{investors.length} verified investors actively looking for deals</p>
         </div>
-        <Link to="/investors" className="text-brand-700 text-sm font-semibold hover:underline">Connect with Investors →</Link>
+        <Link to="/investors" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+          Connect with Investors →
+        </Link>
       </div>
-      <div className="group relative overflow-hidden"
-        style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}>
-        <div className="flex gap-5 group-hover:[animation-play-state:paused]"
-          style={{ width: 'max-content', animation: `scroll-left ${investors.length * 7}s linear infinite` }}>
+      <div
+        className="group relative overflow-hidden"
+        style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}
+      >
+        <div
+          className="flex gap-4 group-hover:[animation-play-state:paused]"
+          style={{ width: 'max-content', animation: `scroll-left ${investors.length * 7}s linear infinite` }}
+        >
           {items.map((inv, i) => <InvestorScrollCard key={i} inv={inv} />)}
         </div>
       </div>
@@ -208,36 +221,44 @@ function InvestorScrollSection() {
 }
 
 function PitchScrollCard({ pitch }) {
-  const STAGE_COLORS = { idea: 'bg-purple-100 text-purple-700', seed: 'bg-green-100 text-green-700', growth: 'bg-blue-100 text-blue-700' }
-  const stageColor = STAGE_COLORS[pitch.stage] || 'bg-gray-100 text-gray-700'
+  const STAGE_COLORS = {
+    idea: 'bg-purple-100 text-purple-700',
+    seed: 'bg-green-100 text-green-700',
+    growth: 'bg-blue-100 text-blue-700',
+  }
+  const stageColor = STAGE_COLORS[pitch.stage] || 'bg-zinc-100 text-zinc-700'
   const goalStr = pitch.funding_goal >= 1_000_000
     ? `$${(pitch.funding_goal / 1_000_000).toFixed(1)}M`
     : `$${(pitch.funding_goal / 1_000).toFixed(0)}K`
 
   return (
-    <Link to={`/pitches/${pitch.id}`}
-      className="w-80 flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all block">
-      <div className="bg-gradient-to-br from-gray-900 to-brand-900 p-5">
+    <Link
+      to={`/pitches/${pitch.id}`}
+      className="w-80 flex-shrink-0 bg-white border border-zinc-200 rounded-xl overflow-hidden hover:border-zinc-300 hover:shadow-sm transition-all block"
+    >
+      <div className="bg-zinc-900 p-5">
         <div className="flex items-start justify-between gap-2 mb-3">
-          <p className="font-black text-white text-base leading-tight line-clamp-2">
+          <p className="font-semibold text-white text-sm leading-tight line-clamp-2">
             {pitch.title.includes('—') ? pitch.title.split('—')[0].trim() : pitch.title}
           </p>
-          <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full capitalize whitespace-nowrap flex-shrink-0 ${stageColor}`}>{pitch.stage}</span>
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-md capitalize whitespace-nowrap flex-shrink-0 ${stageColor}`}>
+            {pitch.stage}
+          </span>
         </div>
-        <p className="text-3xl font-black text-gold-400">{goalStr}</p>
-        <p className="text-gray-400 text-xs mt-0.5">funding goal</p>
+        <p className="text-2xl font-bold text-white">{goalStr}</p>
+        <p className="text-zinc-500 text-xs mt-0.5">funding goal</p>
       </div>
       <div className="p-4">
-        <span className="text-xs bg-brand-100 text-brand-700 font-semibold px-2.5 py-1 rounded-full">{pitch.industry}</span>
-        <p className="text-gray-600 text-xs leading-relaxed mt-3 line-clamp-3">{pitch.description}</p>
-        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">{pitch.industry}</span>
+        <p className="text-sm text-zinc-600 leading-relaxed mt-3 line-clamp-3">{pitch.description}</p>
+        <div className="mt-3 pt-3 border-t border-zinc-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-brand-800 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-semibold flex-shrink-0">
               {pitch.owner?.full_name?.[0] || 'F'}
             </div>
-            <span className="text-xs text-gray-500 font-medium truncate max-w-[120px]">{pitch.owner?.full_name}</span>
+            <span className="text-xs text-zinc-500 truncate max-w-[120px]">{pitch.owner?.full_name}</span>
           </div>
-          <span className="text-xs text-brand-700 font-bold flex-shrink-0">View Pitch →</span>
+          <span className="text-xs text-blue-600 font-medium flex-shrink-0">View Pitch →</span>
         </div>
       </div>
     </Link>
@@ -262,50 +283,72 @@ function DealFlowSection() {
   let items = needsLoop ? [...filtered, ...filtered] : [...filtered]
 
   return (
-    <div className="mb-10">
-      <div className="flex items-center justify-between mb-5">
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-xl font-black text-brand-800">Live Deal Flow</h2>
-          <p className="text-gray-400 text-sm mt-0.5">
-            <span className="font-bold text-brand-700">{filtered.length}</span> pitch{filtered.length !== 1 ? 'es' : ''} match your filters — hover to pause
+          <h2 className="text-base font-semibold text-zinc-900">Live Deal Flow</h2>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            <span className="font-medium text-zinc-600">{filtered.length}</span> pitch{filtered.length !== 1 ? 'es' : ''} match your filters
           </p>
         </div>
-        <Link to="/pitches" className="text-gold-600 text-sm font-semibold hover:underline">View All Pitches →</Link>
+        <Link to="/pitches" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+          View All Pitches →
+        </Link>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5 flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="text-xs text-gray-500 font-bold uppercase tracking-wider min-w-[110px]">Investment Range</span>
-          <div className="flex flex-wrap gap-2">
+
+      {/* Filters */}
+      <div className="bg-white border border-zinc-200 rounded-xl p-4 mb-4 flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-zinc-500 min-w-[110px]">Investment Range</span>
+          <div className="flex flex-wrap gap-1.5">
             {DEAL_RANGES.map(r => (
-              <button key={r.label} onClick={() => setRangeFilter(r.label)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${rangeFilter === r.label ? 'bg-brand-800 text-white border-brand-800 shadow' : 'border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-700'}`}>
+              <button
+                key={r.label}
+                onClick={() => setRangeFilter(r.label)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border ${
+                  rangeFilter === r.label
+                    ? 'bg-zinc-900 text-white border-zinc-900'
+                    : 'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
+                }`}
+              >
                 {r.label}
               </button>
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="text-xs text-gray-500 font-bold uppercase tracking-wider min-w-[110px]">Industry</span>
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-zinc-500 min-w-[110px]">Industry</span>
+          <div className="flex flex-wrap gap-1.5">
             {DEAL_INDUSTRIES.map(ind => (
-              <button key={ind} onClick={() => setIndustryFilter(ind)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${industryFilter === ind ? 'bg-gold-500 text-white border-gold-500 shadow' : 'border-gray-200 text-gray-600 hover:border-gold-400 hover:text-gold-700'}`}>
+              <button
+                key={ind}
+                onClick={() => setIndustryFilter(ind)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border ${
+                  industryFilter === ind
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
+                }`}
+              >
                 {ind}
               </button>
             ))}
           </div>
         </div>
       </div>
+
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-          <div className="text-4xl mb-3">🔍</div>
-          <p className="text-gray-500 text-sm font-medium">No pitches match your current filters.</p>
+        <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center">
+          <p className="text-sm text-zinc-500 font-medium">No pitches match your current filters.</p>
         </div>
       ) : (
-        <div className="group relative overflow-hidden"
-          style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}>
-          <div className="flex gap-5 group-hover:[animation-play-state:paused]"
-            style={{ width: 'max-content', animation: needsLoop ? `scroll-left ${filtered.length * 9}s linear infinite` : 'none' }}>
+        <div
+          className="group relative overflow-hidden"
+          style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}
+        >
+          <div
+            className="flex gap-4 group-hover:[animation-play-state:paused]"
+            style={{ width: 'max-content', animation: needsLoop ? `scroll-left ${filtered.length * 9}s linear infinite` : 'none' }}
+          >
             {items.map((pitch, i) => <PitchScrollCard key={i} pitch={pitch} />)}
           </div>
         </div>
@@ -338,165 +381,205 @@ export default function Dashboard() {
   }, [isEntrepreneur])
 
   const mainContent = isEntrepreneur ? (
-    <div>
-      <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
 
-        {/* Welcome */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-brand-800 via-brand-700 to-blue-800 rounded-3xl p-8 mb-8 shadow-2xl">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-gold-400 opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 blur-2xl pointer-events-none" />
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div>
-              <p className="text-gold-400 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                Entrepreneur Dashboard
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">
-                Welcome back, {user?.full_name?.split(' ')[0]}! 🚀
-              </h1>
-              <p className="text-blue-200 text-sm">You're on your way to connecting with global investors. Keep building!</p>
-            </div>
-            <Link to="/submit-pitch"
-              className="flex-shrink-0 bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black px-6 py-3 rounded-xl transition-all shadow-lg hover:scale-105 whitespace-nowrap">
-              + Submit New Pitch
-            </Link>
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-200">
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
+              Welcome back, {user?.full_name?.split(' ')[0]}
+            </h1>
+            <p className="text-sm text-zinc-600 mt-0.5">Here's what's happening with your pitches today.</p>
           </div>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
+            Entrepreneur
+          </span>
         </div>
+        <Link
+          to="/submit-pitch"
+          className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          + Submit New Pitch
+        </Link>
+      </div>
 
-        <h2 className="text-xl font-black text-brand-800 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-10">
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-base font-semibold text-zinc-900 mb-3">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           {ENTREPRENEUR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
         </div>
+      </div>
 
-        <div className="mb-8">
-          <DealFlowPipeline />
-        </div>
+      {/* Deal Flow Pipeline */}
+      <div>
+        <DealFlowPipeline />
+      </div>
 
-        {(() => {
-          const mySpvs = spvs.filter(s => myPitchIds.includes(s.pitch_id)).slice(0, 3)
-          return (
-            <div className="mb-10">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-black text-brand-800">Syndicate Activity on Your Pitches</h2>
-                <Link to="/spvs" className="text-brand-700 text-sm font-semibold hover:underline">View all →</Link>
-              </div>
-              {mySpvs.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-                  <div className="text-4xl mb-3">🏦</div>
-                  <p className="font-bold text-brand-800 mb-1">No syndicates yet</p>
-                  <p className="text-gray-500 text-sm max-w-md mx-auto">Investors can form a syndicate to fund your startup. Submit a pitch to get started.</p>
-                  <Link to="/submit-pitch" className="inline-block mt-4 bg-brand-800 hover:bg-brand-700 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
-                    Submit a Pitch →
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {mySpvs.map(s => <SPVCard key={s.id} spv={s} />)}
-                </div>
-              )}
+      {/* Syndicate Activity */}
+      {(() => {
+        const mySpvs = spvs.filter(s => myPitchIds.includes(s.pitch_id)).slice(0, 3)
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold text-zinc-900">Syndicate Activity on Your Pitches</h2>
+              <Link to="/spvs" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                View all →
+              </Link>
             </div>
-          )
-        })()}
+            {mySpvs.length === 0 ? (
+              <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center">
+                <p className="text-base font-semibold text-zinc-900 mb-1">No syndicates yet</p>
+                <p className="text-sm text-zinc-600 max-w-md mx-auto">Investors can form a syndicate to fund your startup. Submit a pitch to get started.</p>
+                <Link
+                  to="/submit-pitch"
+                  className="inline-block mt-4 bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  Submit a Pitch →
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mySpvs.map(s => <SPVCard key={s.id} spv={s} />)}
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-black text-brand-800">Tips & Resources for You</h2>
-          <Link to="/education" className="text-brand-700 text-sm font-semibold hover:underline">View all courses →</Link>
+      {/* Tips & Resources */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-zinc-900">Tips & Resources for You</h2>
+          <Link to="/education" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+            View all courses →
+          </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {ENTREPRENEUR_TIPS.map((item) => <InsightCard key={item.title} item={item} />)}
         </div>
-
-        <div className="bg-gradient-to-r from-gold-500 to-yellow-400 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-          <div>
-            <p className="text-white font-black text-lg">Ready to find your investor?</p>
-            <p className="text-yellow-100 text-sm">Browse verified global investors actively looking for startups in your sector.</p>
-          </div>
-          <Link to="/investors" className="flex-shrink-0 bg-brand-800 hover:bg-brand-700 text-white font-black px-6 py-3 rounded-xl transition whitespace-nowrap shadow">
-            Browse Investors →
-          </Link>
-        </div>
       </div>
+
+      {/* Bottom CTA */}
+      <div className="bg-zinc-900 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <p className="text-white font-semibold text-base">Ready to find your investor?</p>
+          <p className="text-zinc-400 text-sm mt-0.5">Browse verified global investors actively looking for startups in your sector.</p>
+        </div>
+        <Link
+          to="/investors"
+          className="flex-shrink-0 bg-white hover:bg-zinc-100 text-zinc-900 text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+        >
+          Browse Investors →
+        </Link>
+      </div>
+
     </div>
   ) : (
-    <div>
-      <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
 
-        <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-brand-900 rounded-3xl p-8 mb-8 shadow-2xl">
-          <div className="absolute top-0 right-0 w-72 h-72 bg-gold-400 opacity-10 rounded-full translate-x-1/3 -translate-y-1/3 blur-2xl pointer-events-none" />
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div>
-              <p className="text-gold-400 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                Investor Dashboard
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">Welcome back, {user?.full_name?.split(' ')[0]}! 💼</h1>
-              <p className="text-gray-300 text-sm">You have fresh deal flow waiting. Discover your next investment today.</p>
-            </div>
-            <Link to="/pitches"
-              className="flex-shrink-0 bg-gradient-to-r from-gold-500 to-yellow-400 hover:from-gold-600 hover:to-yellow-500 text-white font-black px-6 py-3 rounded-xl transition-all shadow-lg hover:scale-105 whitespace-nowrap">
-              View New Pitches →
-            </Link>
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-200">
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
+              Welcome back, {user?.full_name?.split(' ')[0]}
+            </h1>
+            <p className="text-sm text-zinc-600 mt-0.5">You have fresh deal flow waiting. Discover your next investment today.</p>
           </div>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
+            Investor
+          </span>
         </div>
+        <Link
+          to="/pitches"
+          className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          View New Pitches →
+        </Link>
+      </div>
 
-        <h2 className="text-xl font-black text-brand-800 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-base font-semibold text-zinc-900 mb-3">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {INVESTOR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
         </div>
+      </div>
 
-        <div className="mb-8">
-          <DealFlowPipeline />
-        </div>
+      {/* Deal Flow Pipeline */}
+      <div>
+        <DealFlowPipeline />
+      </div>
 
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-black text-brand-800">Syndicates Forming Now — Join or Lead</h2>
-            <Link to="/spvs" className="text-gold-600 text-sm font-semibold hover:underline">View All Syndicates →</Link>
-          </div>
-          {spvs.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
-              <div className="text-4xl mb-3">🏦</div>
-              <p className="font-bold text-brand-800 mb-1">No syndicates forming right now</p>
-              <p className="text-gray-500 text-sm mb-4">Be the first to lead a syndicate and start earning carry.</p>
-              <Link to="/lead-spv" className="inline-block bg-gold-500 hover:bg-gold-600 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors">
-                + Create Syndicate
-              </Link>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-4">
-                {spvs.slice(0, 4).map(s => <SPVCard key={s.id} spv={s} />)}
-              </div>
-              <Link to="/lead-spv" className="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-600 text-white font-bold px-5 py-2.5 rounded-xl transition-colors text-sm">
-                + Create Syndicate
-              </Link>
-            </>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-black text-brand-800">Market Insights & Deal Flow</h2>
-          <Link to="/pitches" className="text-gold-600 text-sm font-semibold hover:underline">Browse all pitches →</Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          {INVESTOR_INSIGHTS.map((item) => <InsightCard key={item.title} item={item} />)}
-        </div>
-
-        <div className="bg-gradient-to-r from-gray-900 to-brand-900 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-          <div>
-            <p className="text-white font-black text-lg">Don't miss this week's top pitches</p>
-            <p className="text-gray-400 text-sm">6 active startups across 5 countries — reviewed and quality-checked.</p>
-          </div>
-          <Link to="/pitches" className="flex-shrink-0 bg-gold-500 hover:bg-gold-600 text-white font-black px-6 py-3 rounded-xl transition whitespace-nowrap shadow">
-            View Deal Flow →
+      {/* Syndicates */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-zinc-900">Syndicates Forming Now</h2>
+          <Link to="/spvs" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+            View All Syndicates →
           </Link>
         </div>
+        {spvs.length === 0 ? (
+          <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center">
+            <p className="text-base font-semibold text-zinc-900 mb-1">No syndicates forming right now</p>
+            <p className="text-sm text-zinc-600 mb-4">Be the first to lead a syndicate and start earning carry.</p>
+            <Link
+              to="/lead-spv"
+              className="inline-block bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              + Create Syndicate
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              {spvs.slice(0, 4).map(s => <SPVCard key={s.id} spv={s} />)}
+            </div>
+            <Link
+              to="/lead-spv"
+              className="inline-flex items-center gap-2 bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              + Create Syndicate
+            </Link>
+          </>
+        )}
       </div>
+
+      {/* Market Insights */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-zinc-900">Market Insights & Deal Flow</h2>
+          <Link to="/pitches" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+            Browse all pitches →
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {INVESTOR_INSIGHTS.map((item) => <InsightCard key={item.title} item={item} />)}
+        </div>
+      </div>
+
+      {/* Bottom CTA */}
+      <div className="bg-zinc-900 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <p className="text-white font-semibold text-base">Don't miss this week's top pitches</p>
+          <p className="text-zinc-400 text-sm mt-0.5">6 active startups across 5 countries — reviewed and quality-checked.</p>
+        </div>
+        <Link
+          to="/pitches"
+          className="flex-shrink-0 bg-white hover:bg-zinc-100 text-zinc-900 text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+        >
+          View Deal Flow →
+        </Link>
+      </div>
+
     </div>
   )
 
   return (
     <>
-      <main className="bg-gray-50 min-h-[calc(100vh-64px)]">
+      <main className="bg-zinc-50 min-h-[calc(100vh-64px)]">
         {mainContent}
       </main>
 
