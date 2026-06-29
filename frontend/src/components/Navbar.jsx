@@ -11,10 +11,10 @@ function MoreDropdown({ links, onClose }) {
   }, [onClose])
 
   return (
-    <div ref={ref} className="absolute left-0 top-full mt-1 w-44 bg-white border border-zinc-200 rounded-lg shadow-lg shadow-zinc-100 py-1 z-50">
+    <div ref={ref} className="absolute left-0 top-full mt-1 w-52 bg-white border border-gray-100 rounded-xl shadow-xl py-1 z-50">
       {links.map(({ to, label }) => (
         <Link key={to} to={to} onClick={onClose}
-          className="block px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition-colors">
+          className="block px-4 py-2.5 text-sm text-gray-600 hover:text-brand-800 hover:bg-brand-50 transition-colors">
           {label}
         </Link>
       ))}
@@ -23,12 +23,34 @@ function MoreDropdown({ links, onClose }) {
 }
 
 export default function Navbar() {
-  const { user, logout, isAuthenticated } = useAuth()
+  const { user, login, logout, isAuthenticated } = useAuth()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
 
+  const [demoLoading, setDemoLoading] = useState(null)
+
   function handleLogout() { logout(); navigate('/') }
+
+  async function loginAsDemo(role) {
+    const creds = role === 'entrepreneur'
+      ? { email: 'maya@ecodeliver.com', password: 'password123' }
+      : { email: 'sarah@greencap.vc', password: 'password123' }
+    setDemoLoading(role)
+    try {
+      await login(creds.email, creds.password)
+      window.location.href = '/dashboard'
+    } catch {
+      window.location.href = '/login' + (role === 'investor' ? '?type=investor' : '')
+    } finally {
+      setDemoLoading(null)
+    }
+  }
+
+  const linkClass = ({ isActive }) =>
+    isActive
+      ? 'text-gold-400 font-semibold border-b-2 border-gold-400 pb-0.5'
+      : 'text-brand-100 hover:text-white transition-colors'
 
   const primaryLinks = user?.role === 'entrepreneur'
     ? [
@@ -48,66 +70,68 @@ export default function Navbar() {
 
   const moreLinks = user?.role === 'entrepreneur'
     ? [
-        { to: '/education',           label: 'Learn' },
-        { to: '/community',           label: 'Community' },
-        { to: '/messages',            label: 'Messages' },
-        { to: '/government-schemes',  label: 'Govt Schemes' },
+        { to: '/data-room',           label: '📁 Data Room' },
+        { to: '/founder-updates',     label: '📢 Investor Updates' },
+        { to: '/investor-interest',   label: '👥 Investor Activity' },
+        { to: '/audit-feedback',      label: '🔍 Audit Feedback' },
+        { to: '/company-profile',     label: '🏢 Company Profile' },
+        { to: '/education',           label: '📚 Learn' },
+        { to: '/community',           label: '💬 Community' },
+        { to: '/messages',            label: '✉️ Messages' },
+        { to: '/government-schemes',  label: '🏛️ Govt Schemes' },
+        { to: '/settings',            label: '⚙️ Settings' },
       ]
     : user?.role === 'investor'
     ? [
-        { to: '/lead-spv',            label: 'Create Syndicate' },
-        { to: '/education',           label: 'Learn' },
-        { to: '/community',           label: 'Community' },
-        { to: '/messages',            label: 'Messages' },
-        { to: '/government-schemes',  label: 'Govt Schemes' },
+        { to: '/watchlist',             label: '🔖 Watchlist' },
+        { to: '/portfolio',             label: '📊 Portfolio' },
+        { to: '/investor-verification', label: '✅ Verification' },
+        { to: '/lead-spv',              label: '🤝 Create Syndicate' },
+        { to: '/education',             label: '📚 Learn' },
+        { to: '/community',             label: '💬 Community' },
+        { to: '/messages',              label: '✉️ Messages' },
+        { to: '/settings',              label: '⚙️ Settings' },
       ]
     : []
 
-  const navLink = ({ isActive }) =>
-    `px-3 py-1.5 rounded-md text-sm transition-colors ${
-      isActive
-        ? 'text-zinc-900 font-medium bg-zinc-100'
-        : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
-    }`
-
   return (
-    <nav className="bg-white border-b border-zinc-100 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="flex items-center justify-between h-14 gap-6">
+    <nav className="bg-brand-800 shadow-lg sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
 
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0 select-none">
-            <span className="text-zinc-900 text-[15px] font-semibold tracking-tight">
-              Launching<span className="text-blue-600">Laps</span>
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-gold-400 text-2xl font-black tracking-tight">
+              Launching<span className="text-white">Laps</span>
             </span>
           </Link>
 
-          {/* Desktop primary links */}
-          <div className="hidden md:flex items-center gap-0.5 flex-1">
-            {isAuthenticated && (
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-6 text-sm flex-1 ml-8">
+            {isAuthenticated ? (
               <>
                 {user?.role === 'admin' && (
-                  <NavLink to="/admin" className={navLink}>Admin</NavLink>
+                  <NavLink to="/admin" className={linkClass}>Admin</NavLink>
                 )}
                 {user?.role === 'audit' && (
-                  <NavLink to="/audit" className={navLink}>Audit Dashboard</NavLink>
+                  <NavLink to="/audit" className={linkClass}>Audit Dashboard</NavLink>
                 )}
                 {(user?.role === 'entrepreneur' || user?.role === 'investor') && (
                   <>
                     {primaryLinks.map(({ to, label }) => (
-                      <NavLink key={to} to={to} className={navLink}>{label}</NavLink>
+                      <NavLink key={to} to={to} className={linkClass}>{label}</NavLink>
                     ))}
 
                     {moreLinks.length > 0 && (
-                      <div className="relative ml-0.5">
+                      <div className="relative">
                         <button
                           onClick={() => setMoreOpen(v => !v)}
-                          className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors ${
-                            moreOpen ? 'text-zinc-900 bg-zinc-100' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
+                          className={`flex items-center gap-1 transition-colors ${
+                            moreOpen ? 'text-white' : 'text-brand-100 hover:text-white'
                           }`}
                         >
                           More
-                          <svg className={`w-3 h-3 transition-transform ${moreOpen ? 'rotate-180' : ''}`}
+                          <svg className={`w-3.5 h-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`}
                             fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                           </svg>
@@ -118,45 +142,49 @@ export default function Navbar() {
                   </>
                 )}
               </>
-            )}
+            ) : null}
           </div>
 
           {/* Right side */}
-          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+          <div className="hidden md:flex items-center gap-4 border-l border-brand-700 pl-6 flex-shrink-0">
             {isAuthenticated ? (
               <>
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-white text-[11px] font-semibold flex-shrink-0">
-                    {user?.full_name?.[0]?.toUpperCase() || '?'}
-                  </div>
-                  <div className="leading-none">
-                    <p className="text-zinc-900 text-[13px] font-medium">{user?.full_name?.split(' ')[0]}</p>
-                    <p className="text-zinc-400 text-[11px] capitalize mt-0.5">{user?.role}</p>
-                  </div>
-                </div>
+                <span className="text-brand-200 text-xs">
+                  {user?.full_name} &middot; <span className="capitalize text-gold-400">{user?.role}</span>
+                </span>
                 <button onClick={handleLogout}
-                  className="text-xs text-zinc-500 hover:text-zinc-900 font-medium px-3 py-1.5 rounded-md border border-zinc-200 hover:bg-zinc-50 transition-colors">
-                  Log out
+                  className="bg-brand-700 hover:bg-brand-600 text-white text-xs px-3 py-1.5 rounded-lg transition">
+                  Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login?type=entrepreneur"
-                  className="text-sm text-zinc-600 hover:text-zinc-900 font-medium transition-colors">
-                  Sign in
+                <Link to="/login"
+                  className="text-sm text-brand-200 hover:text-white transition-colors">
+                  Sign In
                 </Link>
-                <Link to="/login?type=investor"
-                  className="bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                  Get started
-                </Link>
+                <button
+                  onClick={() => loginAsDemo('entrepreneur')}
+                  disabled={!!demoLoading}
+                  className="text-sm font-bold px-4 py-2 rounded-lg transition-all hover:scale-105 disabled:opacity-50"
+                  style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}>
+                  {demoLoading === 'entrepreneur' ? '...' : '🚀 Entrepreneur'}
+                </button>
+                <button
+                  onClick={() => loginAsDemo('investor')}
+                  disabled={!!demoLoading}
+                  className="text-sm font-bold px-4 py-2 rounded-lg transition-all hover:scale-105 disabled:opacity-50"
+                  style={{ background: '#f59e0b', color: '#000' }}>
+                  {demoLoading === 'investor' ? '...' : '💼 Investor'}
+                </button>
               </>
             )}
           </div>
 
           {/* Mobile hamburger */}
-          <button className="md:hidden text-zinc-500 hover:text-zinc-900 flex-shrink-0 transition-colors"
+          <button className="md:hidden text-white flex-shrink-0"
             onClick={() => setMobileOpen(v => !v)} aria-label="Toggle menu">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {mobileOpen
                 ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
@@ -167,36 +195,26 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-zinc-100 bg-white px-6 py-4 flex flex-col gap-0.5">
+        <div className="md:hidden bg-brand-900 border-t border-brand-700 px-4 pb-4 flex flex-col gap-3 text-sm">
           {isAuthenticated ? (
             <>
               {[...primaryLinks, ...moreLinks].map(({ to, label }) => (
-                <Link key={to} to={to} onClick={() => setMobileOpen(false)}
-                  className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 rounded-md transition-colors">
-                  {label}
-                </Link>
+                <NavLink key={to} to={to} className={linkClass} onClick={() => setMobileOpen(false)}>{label}</NavLink>
               ))}
-              <div className="border-t border-zinc-100 mt-3 pt-3 flex items-center justify-between">
-                <div>
-                  <p className="text-zinc-900 text-sm font-medium">{user?.full_name}</p>
-                  <p className="text-zinc-400 text-xs capitalize">{user?.role}</p>
-                </div>
-                <button onClick={handleLogout}
-                  className="text-sm text-zinc-500 hover:text-zinc-900 font-medium transition-colors">
-                  Log out
-                </button>
-              </div>
+              <button onClick={handleLogout} className="text-left text-red-400 hover:text-red-300">Logout</button>
             </>
           ) : (
             <>
-              <Link to="/login?type=entrepreneur" onClick={() => setMobileOpen(false)}
-                className="px-3 py-2 text-sm text-zinc-600 hover:text-zinc-900 rounded-md transition-colors">
-                Sign in as Entrepreneur
-              </Link>
-              <Link to="/login?type=investor" onClick={() => setMobileOpen(false)}
-                className="px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 rounded-md transition-colors">
-                Sign in as Investor
-              </Link>
+              <button onClick={() => { loginAsDemo('entrepreneur'); setMobileOpen(false) }}
+                disabled={!!demoLoading}
+                className="text-left text-sm font-bold text-white disabled:opacity-50">
+                {demoLoading === 'entrepreneur' ? 'Signing in...' : '🚀 Entrepreneur'}
+              </button>
+              <button onClick={() => { loginAsDemo('investor'); setMobileOpen(false) }}
+                disabled={!!demoLoading}
+                className="text-left text-sm font-bold text-gold-400 disabled:opacity-50">
+                {demoLoading === 'investor' ? 'Signing in...' : '💼 Investor'}
+              </button>
             </>
           )}
         </div>

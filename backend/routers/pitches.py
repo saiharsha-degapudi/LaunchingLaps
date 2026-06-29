@@ -139,8 +139,13 @@ def audit_pitch(
 ):
     if current_user.role != models.UserRole.audit:
         raise HTTPException(status_code=403, detail="Only audit team members can update audit status.")
-    if audit_in.audit_status not in ("open", "proceed", "rejected"):
-        raise HTTPException(status_code=400, detail="audit_status must be open, proceed, or rejected.")
+    VALID_STATUSES = {
+        "open", "proceed", "rejected",
+        "submitted", "screening", "documents_missing", "in_progress",
+        "changes_required", "approved", "approved_with_warnings", "expired"
+    }
+    if audit_in.audit_status not in VALID_STATUSES:
+        raise HTTPException(status_code=400, detail="Invalid audit_status value.")
     pitch = db.query(models.Pitch).filter(models.Pitch.id == pitch_id).first()
     if not pitch:
         raise HTTPException(status_code=404, detail="Pitch not found")

@@ -21,7 +21,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
 
   function handleChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
     setError('')
   }
 
@@ -45,62 +45,42 @@ export default function Register() {
     }
   }
 
-  const ROLES = [
-    { value: 'entrepreneur', label: 'Entrepreneur' },
-    { value: 'investor',     label: 'Investor'     },
-    { value: 'audit',        label: 'Auditor'      },
-  ]
-
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-zinc-50 flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-[400px]">
+    <div className="min-h-[calc(100vh-64px)] bg-gray-50 flex items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md">
+        <div className="card shadow-md">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-black text-brand-800">Create your account</h1>
+            <p className="text-gray-500 text-sm mt-1">Join LaunchingLaps — it's free</p>
+          </div>
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight mb-1">Create your account</h1>
-          <p className="text-sm text-zinc-500">
-            Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
-              Sign in
-            </Link>
-          </p>
-        </div>
-
-        <div className="bg-white border border-zinc-200 rounded-xl p-6">
-
-          {/* Error */}
           {error && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-lg px-3.5 py-3 text-sm border border-red-200 bg-red-50 text-red-700">
-              <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="mb-5 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
 
-          {/* Role selector — shown above Google button so role is sent with Google sign-up */}
-          <div className="mb-5">
-            <label className="block text-xs font-medium text-zinc-500 mb-1.5">I am a</label>
-            <div className="flex gap-2">
-              {ROLES.map(r => (
+          <div className="mb-2">
+            <label className="label">I am a…</label>
+            <div className="grid grid-cols-2 gap-3">
+              {['entrepreneur', 'investor'].map((role) => (
                 <button
-                  key={r.value}
+                  key={role}
                   type="button"
-                  onClick={() => setForm(prev => ({ ...prev, role: r.value }))}
-                  className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-colors ${
-                    form.role === r.value
-                      ? 'border-zinc-900 bg-zinc-900 text-white'
-                      : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
+                  onClick={() => setForm((p) => ({ ...p, role }))}
+                  className={`py-3 rounded-lg border-2 text-sm font-semibold capitalize transition ${
+                    form.role === role
+                      ? 'border-brand-800 bg-brand-800 text-white'
+                      : 'border-gray-300 text-gray-600 hover:border-brand-800'
                   }`}
                 >
-                  {r.label}
+                  {role}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Google Sign-Up */}
-          <div className="flex justify-center mb-4 rounded-lg overflow-hidden border border-zinc-200">
+          <div className="flex justify-center mb-1">
             <GoogleLogin
               onSuccess={async ({ credential }) => {
                 setLoading(true)
@@ -117,100 +97,65 @@ export default function Register() {
               onError={() => setError('Google sign-up failed. Please try again.')}
               shape="rectangular"
               size="large"
-              width="356"
+              width="360"
               text="continue_with"
-              theme="outline"
             />
           </div>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px bg-zinc-100" />
-            <span className="text-xs text-zinc-400">or sign up with email</span>
-            <div className="flex-1 h-px bg-zinc-100" />
+          <div className="flex items-center gap-3 my-1">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400 font-medium">or sign up with email</span>
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label htmlFor="full_name" className="block text-xs font-medium text-zinc-500 mb-1.5">
-                Full name
-              </label>
+              <label htmlFor="full_name" className="label">Full name</label>
               <input
-                id="full_name"
-                name="full_name"
-                type="text"
-                autoComplete="name"
-                required
-                value={form.full_name}
-                onChange={handleChange}
-                placeholder="Jane Smith"
-                className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
+                id="full_name" name="full_name" type="text" autoComplete="name" required
+                value={form.full_name} onChange={handleChange} placeholder="Jane Smith"
+                className="input"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-xs font-medium text-zinc-500 mb-1.5">
-                Email address
-              </label>
+              <label htmlFor="email" className="label">Email address</label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={form.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
+                id="email" name="email" type="email" autoComplete="email" required
+                value={form.email} onChange={handleChange} placeholder="you@example.com"
+                className="input"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-xs font-medium text-zinc-500 mb-1.5">
-                Password
-              </label>
+              <label htmlFor="password" className="label">Password</label>
               <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={6}
-                value={form.password}
-                onChange={handleChange}
-                placeholder="At least 6 characters"
-                className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
+                id="password" name="password" type="password" autoComplete="new-password" required minLength={6}
+                value={form.password} onChange={handleChange} placeholder="At least 6 characters"
+                className="input"
               />
             </div>
 
             <div>
-              <label htmlFor="bio" className="block text-xs font-medium text-zinc-500 mb-1.5">
-                Short bio <span className="text-zinc-400 font-normal">(optional)</span>
+              <label htmlFor="bio" className="label">
+                Short bio <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <textarea
-                id="bio"
-                name="bio"
-                rows={3}
-                value={form.bio}
-                onChange={handleChange}
+                id="bio" name="bio" rows={3}
+                value={form.bio} onChange={handleChange}
                 placeholder="Tell investors or entrepreneurs a bit about yourself…"
-                className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white resize-none"
+                className="input resize-none"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-1"
-            >
+            <button type="submit" disabled={loading} className="btn-gold justify-center w-full mt-1">
               {loading ? (
                 <>
                   <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  Creating account...
+                  Creating account…
                 </>
               ) : (
                 'Create Account'
@@ -218,13 +163,13 @@ export default function Register() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-zinc-400 mt-5">
-            By creating an account you agree to our{' '}
-            <span className="text-zinc-600">Terms of Service</span> and{' '}
-            <span className="text-zinc-600">Privacy Policy</span>.
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Already have an account?{' '}
+            <Link to="/login" className="text-brand-700 font-semibold hover:underline">
+              Sign in
+            </Link>
           </p>
         </div>
-
       </div>
     </div>
   )

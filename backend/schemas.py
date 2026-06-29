@@ -358,6 +358,7 @@ class AuditReportCreate(BaseModel):
     recommendations: Optional[str] = None
     strengths: Optional[str] = None
     concerns: Optional[str] = None
+    pdf_url: Optional[str] = None
 
 
 class AuditReportOut(BaseModel):
@@ -373,6 +374,7 @@ class AuditReportOut(BaseModel):
     recommendations: Optional[str] = None
     strengths: Optional[str] = None
     concerns: Optional[str] = None
+    pdf_url: Optional[str] = None
     audited_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

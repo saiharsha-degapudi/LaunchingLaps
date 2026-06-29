@@ -227,6 +227,7 @@ class AuditReport(Base):
     strengths         = Column(Text, nullable=True)
     concerns          = Column(Text, nullable=True)
     audited_at        = Column(DateTime(timezone=True), server_default=func.now())
+    pdf_url           = Column(String, nullable=True)
 
     pitch   = relationship("Pitch", backref="audit_report")
     auditor = relationship("User")

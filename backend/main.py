@@ -1,9 +1,13 @@
 import os
+import uuid
+import shutil
+from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()  # loads .env file if present — env vars already set take priority
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
@@ -21,6 +25,9 @@ from auth import (
 from routers import pitches, investors, education, community, spvs
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+
+UPLOAD_DIR = Path("uploads/audit_reports")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
@@ -48,6 +55,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Static files (audit report PDFs) ─────────────────────────────────────────
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(pitches.router)
@@ -148,6 +158,43 @@ def google_auth(payload: schemas.GoogleAuthRequest, db: Session = Depends(get_db
         token_type="bearer",
         user=schemas.UserOut.model_validate(user),
     )
+
+
+@app.post("/pitches/{pitch_id}/audit-report/upload-pdf")
+async def upload_audit_report_pdf(
+    pitch_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if current_user.role != models.UserRole.audit:
+        raise HTTPException(status_code=403, detail="Only audit team can upload audit reports.")
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
+
+    ext = Path(file.filename).suffix
+    filename = f"pitch_{pitch_id}_{uuid.uuid4().hex}{ext}"
+    dest = UPLOAD_DIR / filename
+    with dest.open("wb") as buf:
+        shutil.copyfileobj(file.file, buf)
+
+    pdf_url = f"/uploads/audit_reports/{filename}"
+
+    report = db.query(models.AuditReport).filter(models.AuditReport.pitch_id == pitch_id).first()
+    if report:
+        report.pdf_url = pdf_url
+        db.commit()
+    else:
+        report = models.AuditReport(
+            pitch_id=pitch_id,
+            auditor_id=current_user.id,
+            verdict="pending",
+            pdf_url=pdf_url,
+        )
+        db.add(report)
+        db.commit()
+
+    return {"pdf_url": pdf_url}
 
 
 @app.get("/health")

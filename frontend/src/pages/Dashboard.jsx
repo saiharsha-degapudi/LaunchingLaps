@@ -4,595 +4,504 @@ import { useEffect, useState, useRef } from 'react'
 import api from '../api/axios'
 import DealFlowPipeline from '../components/DealFlowPipeline'
 import SPVCard from '../components/SPVCard'
+import PitchProgressTracker from '../components/PitchProgressTracker'
+import FounderActionChecklist from '../components/FounderActionChecklist'
+import { useDragScroll } from '../utils/design'
+import {
+  Briefcase, Eye, Envelope, Bank, PresentationChart, Users,
+  CurrencyDollar, ArrowRight, TrendUp, Lightning,
+} from '@phosphor-icons/react'
 
-const ENTREPRENEUR_ADS = [
-  '🚀 New: Get your pitch reviewed by an investor mentor — Book now',
-  '📚 Free Course: "How to Register Your Business for Global Investors" — Enroll today',
-  '💡 Tip: Pitches with video introductions get 3× more investor views',
-  '🎯 Funding Alert: 12 new investors added this week matching your sector',
-  '🏆 Success Story: EcoDeliver raised $500K through a LaunchingLaps syndicate',
-  '📝 Template: Download our winning pitch deck template — Free for members',
-  '🌍 Webinar: "Pitching to Global Investors 101" — This Friday, Free to join',
-]
-
-const INVESTOR_ADS = [
-  '💼 Deal Flow: 8 new high-quality pitches added this week — Review now',
-  '📊 Market Insight: AI startup valuations up 34% YoY — See opportunities',
-  '🔔 Alert: 3 startups in your focus sector just updated their pitches',
-  '📰 Weekly Digest: Top 5 pitches curated for your investment thesis',
-  '🌿 Hot Sector: Green Tech deals getting 2x faster closes in 2026',
-  '🤝 Event: Exclusive Investor Roundtable — June 20, Virtual · Free',
-  '💰 Portfolio Tip: Diversify across 3+ sectors to reduce risk exposure',
-]
-
-const ENTREPRENEUR_TIPS = [
-  { emoji: '📋', title: 'Perfect Your Pitch', desc: 'Investors spend on average 3 minutes on a pitch. Lead with your problem statement and traction metrics. Be specific.', tag: 'Pitch Tips' },
-  { emoji: '💵', title: 'Know Your Numbers', desc: 'Always have your CAC, LTV, MRR, and burn rate ready. Investors globally will ask, so know them cold.', tag: 'Finance 101' },
-  { emoji: '🤝', title: 'Warm Introductions Win', desc: 'A warm intro from a mutual connection increases your reply rate from investors by over 400% vs cold outreach.', tag: 'Networking' },
-  { emoji: '🌍', title: 'Structure Your Business', desc: 'Global investors look for clear legal structures. A Delaware C-Corp or equivalent clean entity inspires investor confidence.', tag: 'Legal Tip' },
-]
-
-const INVESTOR_INSIGHTS = [
-  { emoji: '📈', title: 'AI Sector Surging', desc: 'AI startups on the platform are seeing 2x more revenue growth than other sectors. 24 pitches currently open.', tag: 'Market Trend' },
-  { emoji: '🌍', title: 'Global Deal Flow', desc: "This week's top pitches come from India, Nigeria, Brazil, and the Philippines — all seeking global capital.", tag: 'Deal Flow' },
-  { emoji: '⚡', title: 'Fast-Close Tip', desc: 'Investors who respond within 48 hours of pitch submission close deals 3x faster than the platform average.', tag: 'Strategy' },
-  { emoji: '🔎', title: 'Due Diligence Guide', desc: 'Our new 50-point evaluation framework helps you assess traction, team, and market size in under 30 minutes.', tag: 'Resource' },
-]
-
-const ENTREPRENEUR_QUICK_LINKS = [
-  { to: '/submit-pitch', emoji: '➕', label: 'Submit a Pitch', desc: 'Create and publish your investor pitch' },
-  { to: '/pitches', emoji: '📋', label: 'My Pitches', desc: 'Manage pitches & track interest' },
-  { to: '/education', emoji: '🎓', label: 'Education', desc: '6 expert courses — free to access' },
-  { to: '/community', emoji: '💬', label: 'Community', desc: 'Connect with fellow entrepreneurs' },
-  { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Replies from interested investors' },
-  { to: '/investors', emoji: '🔍', label: 'Find Investors', desc: 'Browse investor profiles' },
-  { to: '/government-schemes', emoji: '🏛️', label: 'Govt Schemes', desc: 'Explore government funding' },
-]
-
-const INVESTOR_QUICK_LINKS = [
-  { to: '/pitches', emoji: '🔍', label: 'Browse Pitches', desc: '6 active pitches from global founders' },
-  { to: '/investors', emoji: '👥', label: 'Investor Network', desc: 'Co-invest with fellow investors' },
-  { to: '/education', emoji: '🎓', label: 'Courses', desc: '6 courses incl. Due Diligence & Series A' },
-  { to: '/messages', emoji: '📨', label: 'Messages', desc: 'Your founder conversations' },
-  { to: '/community', emoji: '💬', label: 'Community', desc: '10+ posts on deals, legal & strategy' },
-]
-
-const DEAL_RANGES = [
-  { label: 'All', min: 0, max: Infinity },
-  { label: 'Under $500K', min: 0, max: 500000 },
-  { label: '$500K–$1M', min: 500000, max: 1000001 },
-  { label: '$1M–$2M', min: 1000001, max: 2000001 },
-  { label: '$2M+', min: 2000001, max: Infinity },
-]
-const DEAL_INDUSTRIES = ['All', 'FinTech', 'HealthTech', 'AgriTech', 'EdTech', 'Cybersecurity', 'Green Energy', 'SaaS']
-
-const LIVE_ACTIVITY = [
-  { icon: '🤝', text: 'MedAI matched with Impact Horizon Fund', time: '2m' },
-  { icon: '💰', text: 'EcoDeliver closed $1.2M seed round', time: '18m' },
-  { icon: '📋', text: 'FarmConnect pitch approved by audit team', time: '41m' },
-  { icon: '🚀', text: 'SwiftRoute received 3 term sheets', time: '1h' },
-  { icon: '👤', text: 'TechBridge Capital joined the platform', time: '2h' },
-  { icon: '📊', text: '14 new pitches submitted today', time: '3h' },
-  { icon: '🏆', text: 'NovaPay selected for Fast Track program', time: '4h' },
-]
-
-// Vertical Auto-Scroll Hook
-function useVerticalScroll(items) {
+// ── Count-up hook ─────────────────────────────────────────────────────────────
+function useCountUp(target, duration = 1000) {
+  const [val, setVal] = useState(0)
   const ref = useRef(null)
-  const pos = useRef(0)
-  const raf = useRef(null)
-  const paused = useRef(false)
-
-  const startScroll = () => {
-    const el = ref.current
-    if (!el) return
-    const step = () => {
-      if (!paused.current) {
-        pos.current += 0.5
-        if (pos.current >= el.scrollHeight / 2) pos.current = 0
-        el.scrollTop = pos.current
-      }
-      raf.current = requestAnimationFrame(step)
-    }
-    raf.current = requestAnimationFrame(step)
-  }
-
   useEffect(() => {
-    startScroll()
-    return () => cancelAnimationFrame(raf.current)
-  }, [items.length])
-
-  return {
-    ref,
-    onMouseEnter: () => { paused.current = true },
-    onMouseLeave: () => { paused.current = false },
-  }
+    const obs = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return
+      obs.disconnect()
+      const end = parseFloat(String(target).replace(/[^0-9.]/g, ''))
+      const step = end / (duration / 16)
+      let cur = 0
+      const t = setInterval(() => {
+        cur = Math.min(cur + step, end)
+        setVal(cur)
+        if (cur >= end) clearInterval(t)
+      }, 16)
+    }, { threshold: 0.4 })
+    if (ref.current) obs.observe(ref.current)
+    return () => obs.disconnect()
+  }, [target])
+  return { ref, val }
 }
 
-// Shared UI Components
-function QuickLinkCard({ to, emoji, label, desc }) {
+// ── Stat card ─────────────────────────────────────────────────────────────────
+function StatCard({ icon: Icon, label, value, suffix = '', sub, iconColor = '#f59e0b' }) {
+  const { ref, val } = useCountUp(value)
+  const isDecimal = String(value).includes('.')
+  const display = isDecimal ? val.toFixed(1) : Math.round(val).toLocaleString()
   return (
-    <Link
-      to={to}
-      className="group bg-white border border-zinc-200 rounded-xl p-5 hover:border-zinc-300 hover:shadow-sm transition-all flex flex-col gap-3"
-    >
-      <span className="text-xl">{emoji}</span>
+    <div ref={ref}
+      className="bg-white rounded-xl border border-gray-100 p-5 flex items-start gap-4 hover:shadow-sm transition-shadow">
+      <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background: `${iconColor}15` }}>
+        <Icon size={17} style={{ color: iconColor }} weight="fill" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[22px] font-black leading-none text-gray-900">
+          {display}{suffix}
+        </p>
+        <p className="text-xs font-medium text-gray-400 mt-1 leading-tight">{label}</p>
+        {sub && <p className="text-[10px] text-gray-300 mt-0.5">{sub}</p>}
+      </div>
+    </div>
+  )
+}
+
+// ── Page header ───────────────────────────────────────────────────────────────
+function PageHeader({ greeting, sub, action }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
       <div>
-        <p className="text-sm font-semibold text-zinc-900">{label}</p>
-        <p className="text-xs text-zinc-400 mt-0.5 leading-snug">{desc}</p>
+        <h1 className="text-[22px] font-black text-gray-900 leading-tight">{greeting}</h1>
+        <p className="text-sm text-gray-400 mt-0.5">{sub}</p>
       </div>
-    </Link>
-  )
-}
-
-function InsightCard({ item }) {
-  return (
-    <div className="bg-white border border-zinc-200 rounded-xl p-5 flex flex-col gap-3 hover:border-zinc-300 transition-colors">
-      <div className="flex items-start justify-between">
-        <span className="text-xl">{item.emoji}</span>
-        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
-          {item.tag}
-        </span>
-      </div>
-      <div>
-        <h3 className="text-base font-semibold text-zinc-900 mb-1">{item.title}</h3>
-        <p className="text-sm text-zinc-600 leading-relaxed">{item.desc}</p>
-      </div>
+      {action}
     </div>
   )
 }
 
-function InvestorScrollCard({ inv }) {
-  const industries = inv.industry_focus?.split(',').slice(0, 3).map(s => s.trim()) || []
-  const stages = inv.preferred_stages?.split(',').map(s => s.trim()) || []
-  const maxStr = inv.investment_max >= 1_000_000
-    ? `$${(inv.investment_max / 1_000_000).toFixed(1)}M`
-    : `$${(inv.investment_max / 1_000).toFixed(0)}K`
-  const minStr = `$${(inv.investment_min / 1_000).toFixed(0)}K`
-
+// ── Section header ────────────────────────────────────────────────────────────
+function SectionHeader({ title, linkTo, linkLabel = 'View all' }) {
   return (
-    <div className="w-72 flex-shrink-0 bg-white border border-zinc-200 rounded-xl overflow-hidden hover:border-zinc-300 hover:shadow-sm transition-all">
-      <div className="bg-zinc-900 p-5">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-            {inv.user?.full_name?.[0] || 'I'}
-          </div>
-          <div className="min-w-0">
-            <p className="font-semibold text-white text-sm truncate">{inv.user?.full_name}</p>
-            <p className="text-zinc-400 text-xs truncate">{inv.firm_name}</p>
-            {inv.location && <p className="text-zinc-500 text-xs mt-0.5 truncate">{inv.location}</p>}
-          </div>
-        </div>
-      </div>
-      <div className="p-4">
-        <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 mb-3">
-          <p className="text-xs text-zinc-400 font-medium mb-0.5">Investment Range</p>
-          <p className="font-semibold text-zinc-900 text-sm">{minStr} – {maxStr}</p>
-        </div>
-        {inv.user?.bio && <p className="text-zinc-600 text-xs leading-relaxed mb-3 line-clamp-2">{inv.user.bio}</p>}
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {industries.map(ind => (
-            <span key={ind} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">{ind}</span>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {stages.map(s => (
-            <span key={s} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-50 text-blue-600 capitalize">{s}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function InvestorScrollSection() {
-  const [investors, setInvestors] = useState([])
-  useEffect(() => { api.get('/investors/').then(r => setInvestors(r.data)).catch(() => {}) }, [])
-  if (!investors.length) return null
-
-  let items = [...investors]
-  while (items.length < 5) items = [...items, ...investors]
-  items = [...items, ...items]
-
-  return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-base font-semibold text-zinc-900">Active Investors on Platform</h2>
-          <p className="text-xs text-zinc-400 mt-0.5">{investors.length} verified investors actively looking for deals</p>
-        </div>
-        <Link to="/investors" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-          Connect with Investors →
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-[13px] font-black uppercase tracking-wide text-gray-400">{title}</h2>
+      {linkTo && (
+        <Link to={linkTo}
+          className="flex items-center gap-1 text-[12px] font-semibold text-amber-600 hover:text-amber-700 transition-colors">
+          {linkLabel} <ArrowRight size={12} />
         </Link>
-      </div>
-      <div
-        className="group relative overflow-hidden"
-        style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)' }}
-      >
-        <div
-          className="flex gap-4 group-hover:[animation-play-state:paused]"
-          style={{ width: 'max-content', animation: `scroll-left ${investors.length * 7}s linear infinite` }}
-        >
-          {items.map((inv, i) => <InvestorScrollCard key={i} inv={inv} />)}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function PitchScrollCard({ pitch }) {
-  const STAGE_COLORS = {
-    idea: 'bg-purple-100 text-purple-700',
-    seed: 'bg-green-100 text-green-700',
-    growth: 'bg-blue-100 text-blue-700',
-  }
-  const stageColor = STAGE_COLORS[pitch.stage] || 'bg-zinc-100 text-zinc-700'
-  const goalStr = pitch.funding_goal >= 1_000_000
-    ? `$${(pitch.funding_goal / 1_000_000).toFixed(1)}M`
-    : `$${(pitch.funding_goal / 1_000).toFixed(0)}K`
-
-  return (
-    <Link
-      to={`/pitches/${pitch.id}`}
-      className="w-80 flex-shrink-0 bg-white border border-zinc-200 rounded-xl overflow-hidden hover:border-zinc-300 hover:shadow-sm transition-all block"
-    >
-      <div className="bg-zinc-900 p-5">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <p className="font-semibold text-white text-sm leading-tight line-clamp-2">
-            {pitch.title.includes('—') ? pitch.title.split('—')[0].trim() : pitch.title}
-          </p>
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-md capitalize whitespace-nowrap flex-shrink-0 ${stageColor}`}>
-            {pitch.stage}
-          </span>
-        </div>
-        <p className="text-2xl font-bold text-white">{goalStr}</p>
-        <p className="text-zinc-500 text-xs mt-0.5">funding goal</p>
-      </div>
-      <div className="p-4">
-        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">{pitch.industry}</span>
-        <p className="text-sm text-zinc-600 leading-relaxed mt-3 line-clamp-3">{pitch.description}</p>
-        <div className="mt-3 pt-3 border-t border-zinc-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs font-semibold flex-shrink-0">
-              {pitch.owner?.full_name?.[0] || 'F'}
-            </div>
-            <span className="text-xs text-zinc-500 truncate max-w-[120px]">{pitch.owner?.full_name}</span>
-          </div>
-          <span className="text-xs text-blue-600 font-medium flex-shrink-0">View Pitch →</span>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-function DealFlowSection() {
-  const [pitches, setPitches] = useState([])
-  const [rangeFilter, setRangeFilter] = useState('All')
-  const [industryFilter, setIndustryFilter] = useState('All')
-
-  useEffect(() => { api.get('/pitches/').then(r => setPitches(r.data)).catch(() => {}) }, [])
-
-  const selectedRange = DEAL_RANGES.find(r => r.label === rangeFilter) || DEAL_RANGES[0]
-  const filtered = pitches.filter(p => {
-    const matchRange = p.funding_goal >= selectedRange.min && p.funding_goal <= selectedRange.max
-    const matchIndustry = industryFilter === 'All' || p.industry.toLowerCase().includes(industryFilter.toLowerCase())
-    return matchRange && matchIndustry
-  })
-
-  const needsLoop = filtered.length >= 3
-  let items = needsLoop ? [...filtered, ...filtered] : [...filtered]
-
-  return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-base font-semibold text-zinc-900">Live Deal Flow</h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            <span className="font-medium text-zinc-600">{filtered.length}</span> pitch{filtered.length !== 1 ? 'es' : ''} match your filters
-          </p>
-        </div>
-        <Link to="/pitches" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-          View All Pitches →
-        </Link>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white border border-zinc-200 rounded-xl p-4 mb-4 flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-zinc-500 min-w-[110px]">Investment Range</span>
-          <div className="flex flex-wrap gap-1.5">
-            {DEAL_RANGES.map(r => (
-              <button
-                key={r.label}
-                onClick={() => setRangeFilter(r.label)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border ${
-                  rangeFilter === r.label
-                    ? 'bg-zinc-900 text-white border-zinc-900'
-                    : 'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-zinc-500 min-w-[110px]">Industry</span>
-          <div className="flex flex-wrap gap-1.5">
-            {DEAL_INDUSTRIES.map(ind => (
-              <button
-                key={ind}
-                onClick={() => setIndustryFilter(ind)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border ${
-                  industryFilter === ind
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
-                }`}
-              >
-                {ind}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {filtered.length === 0 ? (
-        <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center">
-          <p className="text-sm text-zinc-500 font-medium">No pitches match your current filters.</p>
-        </div>
-      ) : (
-        <div
-          className="group relative overflow-hidden"
-          style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}
-        >
-          <div
-            className="flex gap-4 group-hover:[animation-play-state:paused]"
-            style={{ width: 'max-content', animation: needsLoop ? `scroll-left ${filtered.length * 9}s linear infinite` : 'none' }}
-          >
-            {items.map((pitch, i) => <PitchScrollCard key={i} pitch={pitch} />)}
-          </div>
-        </div>
       )}
     </div>
   )
 }
 
-// Main Dashboard
-export default function Dashboard() {
-  const { user } = useAuth()
-  const isEntrepreneur = user?.role === 'entrepreneur'
+// ── Pitch mini-card (horizontal scroll) ──────────────────────────────────────
+function PitchMiniCard({ pitch }) {
+  const goal = pitch.funding_goal >= 1_000_000
+    ? `$${(pitch.funding_goal / 1_000_000).toFixed(1)}M`
+    : `$${(pitch.funding_goal / 1_000).toFixed(0)}K`
+  const STAGE = { idea: '#8b5cf6', seed: '#10b981', growth: '#3b82f6' }
+  const color = STAGE[pitch.stage] || '#f59e0b'
 
-  const [spvs, setSpvs] = useState([])
-  const [myPitchIds, setMyPitchIds] = useState([])
-
-  useEffect(() => {
-    if (!isEntrepreneur) return
-    api.get('/pitches/')
-      .then(r => setMyPitchIds(r.data.filter(p => p.owner_id === user?.id).map(p => p.id)))
-      .catch(() => {})
-  }, [isEntrepreneur, user?.id])
-
-  useEffect(() => {
-    if (isEntrepreneur) {
-      api.get('/spvs/').then(r => setSpvs(r.data)).catch(() => {})
-    } else {
-      api.get('/spvs/?status=forming').then(r => setSpvs(r.data)).catch(() => {})
-    }
-  }, [isEntrepreneur])
-
-  const mainContent = isEntrepreneur ? (
-    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-200">
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
-              Welcome back, {user?.full_name?.split(' ')[0]}
-            </h1>
-            <p className="text-sm text-zinc-600 mt-0.5">Here's what's happening with your pitches today.</p>
-          </div>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
-            Entrepreneur
-          </span>
-        </div>
-        <Link
-          to="/submit-pitch"
-          className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          + Submit New Pitch
-        </Link>
+  return (
+    <Link to={`/pitches/${pitch.id}`}
+      className="flex-shrink-0 w-64 bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow block">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[10px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full"
+          style={{ background: `${color}18`, color }}>
+          {pitch.stage}
+        </span>
+        <span className="text-[10px] text-gray-300 font-medium">{pitch.industry}</span>
       </div>
+      <h3 className="text-sm font-black text-gray-900 leading-snug mb-2 line-clamp-2">{pitch.title}</h3>
+      <p className="text-lg font-black text-gray-900">{goal}</p>
+      <p className="text-[10px] text-gray-300 mb-3">funding goal</p>
+      <p className="text-xs text-gray-400 line-clamp-2">{pitch.description}</p>
+    </Link>
+  )
+}
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-base font-semibold text-zinc-900 mb-3">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-          {ENTREPRENEUR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
+// ── Investor mini-card ────────────────────────────────────────────────────────
+function InvestorMiniCard({ inv }) {
+  const max = inv.investment_max >= 1_000_000
+    ? `$${(inv.investment_max / 1_000_000).toFixed(1)}M`
+    : `$${(inv.investment_max / 1_000).toFixed(0)}K`
+  const min = `$${(inv.investment_min / 1_000).toFixed(0)}K`
+  const sectors = inv.industry_focus?.split(',').slice(0, 2).map(s => s.trim()) || []
+
+  return (
+    <div className="flex-shrink-0 w-56 bg-white rounded-xl border border-gray-100 p-4">
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+          style={{ background: '#f59e0b', color: '#000' }}>
+          {inv.user?.full_name?.[0] || 'I'}
+        </div>
+        <div className="min-w-0">
+          <p className="text-[12px] font-black text-gray-900 truncate">{inv.user?.full_name}</p>
+          <p className="text-[10px] text-gray-400 truncate">{inv.firm_name}</p>
         </div>
       </div>
-
-      {/* Deal Flow Pipeline */}
-      <div>
-        <DealFlowPipeline />
+      <p className="text-xs font-black text-gray-900">{min} – {max}</p>
+      <p className="text-[10px] text-gray-400 mb-2">investment range</p>
+      <div className="flex flex-wrap gap-1">
+        {sectors.map(s => (
+          <span key={s} className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700">{s}</span>
+        ))}
       </div>
-
-      {/* Syndicate Activity */}
-      {(() => {
-        const mySpvs = spvs.filter(s => myPitchIds.includes(s.pitch_id)).slice(0, 3)
-        return (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-zinc-900">Syndicate Activity on Your Pitches</h2>
-              <Link to="/spvs" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-                View all →
-              </Link>
-            </div>
-            {mySpvs.length === 0 ? (
-              <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center">
-                <p className="text-base font-semibold text-zinc-900 mb-1">No syndicates yet</p>
-                <p className="text-sm text-zinc-600 max-w-md mx-auto">Investors can form a syndicate to fund your startup. Submit a pitch to get started.</p>
-                <Link
-                  to="/submit-pitch"
-                  className="inline-block mt-4 bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                >
-                  Submit a Pitch →
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {mySpvs.map(s => <SPVCard key={s.id} spv={s} />)}
-              </div>
-            )}
-          </div>
-        )
-      })()}
-
-      {/* Tips & Resources */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-zinc-900">Tips & Resources for You</h2>
-          <Link to="/education" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-            View all courses →
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {ENTREPRENEUR_TIPS.map((item) => <InsightCard key={item.title} item={item} />)}
-        </div>
-      </div>
-
-      {/* Bottom CTA */}
-      <div className="bg-zinc-900 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <p className="text-white font-semibold text-base">Ready to find your investor?</p>
-          <p className="text-zinc-400 text-sm mt-0.5">Browse verified global investors actively looking for startups in your sector.</p>
-        </div>
-        <Link
-          to="/investors"
-          className="flex-shrink-0 bg-white hover:bg-zinc-100 text-zinc-900 text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
-        >
-          Browse Investors →
-        </Link>
-      </div>
-
     </div>
-  ) : (
-    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+  )
+}
 
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-200">
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
-              Welcome back, {user?.full_name?.split(' ')[0]}
-            </h1>
-            <p className="text-sm text-zinc-600 mt-0.5">You have fresh deal flow waiting. Discover your next investment today.</p>
+// ── Activity feed ─────────────────────────────────────────────────────────────
+const ACTIVITY = [
+  { text: 'EcoDeliver matched Impact Horizon Fund — $800K term sheet', time: '2m ago', color: '#10b981' },
+  { text: 'MedBridge approved by audit — now live to 340+ investors',  time: '18m ago', color: '#f59e0b' },
+  { text: 'PayLite LATAM Syndicate hit 43% of $750K target',           time: '41m ago', color: '#6366f1' },
+  { text: 'TechBridge Capital joined as verified investor',             time: '1h ago',  color: '#3b82f6' },
+  { text: 'AgriSense selected for LL Fast Track',                       time: '2h ago',  color: '#f59e0b' },
+  { text: '14 new pitches approved across 6 industries today',          time: '3h ago',  color: '#10b981' },
+]
+
+function ActivityFeed() {
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <p className="text-[11px] font-black uppercase tracking-widest text-gray-400">Live Activity</p>
+      </div>
+      <div className="divide-y divide-gray-50">
+        {ACTIVITY.map((a, i) => (
+          <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50/50 transition-colors">
+            <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: a.color }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-700 leading-snug">{a.text}</p>
+              <p className="text-[10px] text-gray-300 mt-0.5">{a.time}</p>
+            </div>
           </div>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
-            Investor
-          </span>
-        </div>
-        <Link
-          to="/pitches"
-          className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          View New Pitches →
-        </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Entrepreneur dashboard ────────────────────────────────────────────────────
+function EntrepreneurDashboard({ user, myPitch, myPitchIds, spvs }) {
+  const firstName = user?.full_name?.split(' ')[0] || 'there'
+  const dragPitches = useDragScroll()
+  const [pitches, setPitches] = useState([])
+  const [companyProfile, setCompanyProfile] = useState(null)
+  useEffect(() => { api.get('/pitches/').then(r => setPitches(r.data)).catch(() => {}) }, [])
+  useEffect(() => { api.get('/company-profile/').then(r => setCompanyProfile(r.data)).catch(() => {}) }, [])
+
+  const relatedPitches = myPitch?.industry
+    ? pitches.filter(p => p.industry === myPitch.industry && p.id !== myPitch.id)
+    : []
+
+  return (
+    <div className="p-6 md:p-8 max-w-6xl mx-auto">
+      <PageHeader
+        greeting={`Welcome back, ${firstName}`}
+        sub="Here's what's happening with your pitches today."
+      />
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard icon={Briefcase}    label="Active Pitches"    value={myPitchIds.length || 1}  iconColor="#f59e0b" />
+        <StatCard icon={Eye}          label="Investor Views"    value={48}                       iconColor="#6366f1" />
+        <StatCard icon={Envelope}     label="Messages"          value={3}                        iconColor="#10b981" />
+        <StatCard icon={Bank}         label="Syndicates on You" value={myPitchIds.length > 0 ? spvs.filter(s => myPitchIds.includes(s.pitch_id)).length : 2} iconColor="#3b82f6" />
       </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-base font-semibold text-zinc-900 mb-3">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {INVESTOR_QUICK_LINKS.map((l) => <QuickLinkCard key={l.to} {...l} />)}
-        </div>
+      {/* Pitch Progress + Checklist */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+        <PitchProgressTracker
+          status={(() => {
+            const s = myPitch?.audit_status
+            if (!s) return null
+            const map = { open: 'draft', in_progress: 'audit_in_progress', approved_with_warnings: 'approved_warnings', proceed: 'approved' }
+            return map[s] || s
+          })()}
+          pitchTitle={myPitch?.title || myPitch?.company_name || null}
+        />
+        <FounderActionChecklist pitch={myPitch} documents={[]} companyProfile={companyProfile} />
       </div>
 
       {/* Deal Flow Pipeline */}
-      <div>
+      <div className="mb-8">
+        <SectionHeader title="Deal Flow Pipeline" />
         <DealFlowPipeline />
       </div>
 
       {/* Syndicates */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-zinc-900">Syndicates Forming Now</h2>
-          <Link to="/spvs" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-            View All Syndicates →
-          </Link>
+      <div className="mb-8">
+        <SectionHeader title="Syndicate Activity" linkTo="/spvs" />
+        {(() => {
+          const mySpvs = spvs.filter(s => myPitchIds.includes(s.pitch_id)).slice(0, 3)
+          return (
+            <div className="space-y-6">
+              {mySpvs.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {mySpvs.map(s => <SPVCard key={s.id} spv={s} />)}
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-100 p-8 text-center">
+                  <Bank size={32} className="mx-auto mb-3 text-gray-200" />
+                  <p className="font-black text-gray-700 mb-1">No syndicates yet</p>
+                  <p className="text-sm text-gray-400 mb-4">Investors can pool capital into a syndicate to fund your pitch.</p>
+                  <Link to="/submit-pitch"
+                    className="inline-flex items-center gap-2 text-sm font-black px-5 py-2.5 rounded-lg"
+                    style={{ background: '#060e1f', color: '#fff' }}>
+                    Submit a Pitch <ArrowRight size={14} />
+                  </Link>
+                </div>
+              )}
+
+              {/* Same-industry pitches for co-syndication discovery */}
+              {myPitch?.industry && (
+                <div className="bg-white border border-zinc-200 rounded-xl p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-0.5">Co-Syndication Opportunities</p>
+                      <p className="text-sm font-semibold text-zinc-900">Other {myPitch.industry} startups</p>
+                      <p className="text-xs text-zinc-400 mt-0.5">Founders in your space — explore forming a joint syndicate</p>
+                    </div>
+                    <a href="/pitches" className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex-shrink-0 mt-1">Browse all →</a>
+                  </div>
+                  {relatedPitches.length > 0 ? (
+                    <div
+                      ref={dragPitches.ref}
+                      onMouseDown={dragPitches.onMouseDown}
+                      onMouseMove={dragPitches.onMouseMove}
+                      onMouseUp={dragPitches.onMouseUp}
+                      className="flex gap-3 overflow-x-auto pb-1 select-none"
+                      style={{ scrollbarWidth: 'none' }}>
+                      {relatedPitches.map(p => <PitchMiniCard key={p.id} pitch={p} />)}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-zinc-400 py-2">No other <span className="font-semibold text-zinc-600">{myPitch.industry}</span> pitches yet — you're the first in this space.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })()}
+      </div>
+
+      {/* Activity + Resources */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <div className="lg:col-span-2">
+          <SectionHeader title="Platform Activity" />
+          <ActivityFeed />
         </div>
+        <div>
+          <SectionHeader title="Resources" />
+          <div className="flex flex-col gap-2">
+            {[
+              { title: 'How to pitch to US investors',      tag: 'Course',  to: '/education' },
+              { title: 'Financial modeling for startups',   tag: 'Course',  to: '/education' },
+              { title: 'Govt startup funding schemes',      tag: 'Schemes', to: '/government-schemes' },
+              { title: 'Community — ask anything',          tag: 'Forum',   to: '/community' },
+            ].map(r => (
+              <Link key={r.title} to={r.to}
+                className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3 hover:shadow-sm transition-shadow">
+                <Lightning size={14} className="text-amber-500 flex-shrink-0" weight="fill" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-800 leading-tight">{r.title}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{r.tag}</p>
+                </div>
+                <ArrowRight size={12} className="text-gray-300 flex-shrink-0" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CTA strip */}
+      <div className="rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        style={{ background: '#060e1f' }}>
+        <div>
+          <p className="font-black text-white text-base">Ready to find your investor?</p>
+          <p className="text-white/40 text-sm mt-0.5">340+ verified global investors. Zero commission on your raise.</p>
+        </div>
+        <Link to="/investors"
+          className="flex-shrink-0 inline-flex items-center gap-2 font-black text-sm px-5 py-2.5 rounded-lg transition-all hover:opacity-90"
+          style={{ background: '#f59e0b', color: '#000' }}>
+          Browse Investors <ArrowRight size={14} />
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// ── Investor dashboard ────────────────────────────────────────────────────────
+function InvestorDashboard({ user, spvs }) {
+  const firstName = user?.full_name?.split(' ')[0] || 'there'
+  const dragPitches = useDragScroll()
+  const dragInv = useDragScroll()
+  const [pitches, setPitches] = useState([])
+  const [investors, setInvestors] = useState([])
+  useEffect(() => {
+    api.get('/pitches/').then(r => setPitches(r.data)).catch(() => {})
+    api.get('/investors/').then(r => setInvestors(r.data)).catch(() => {})
+  }, [])
+
+  const deployed = spvs.reduce((s, v) => s + (Number(v.current_amount) || 0), 0)
+  const deployedStr = deployed >= 1_000_000
+    ? `${(deployed / 1_000_000).toFixed(1)}M`
+    : `${(deployed / 1_000).toFixed(0)}K`
+
+  return (
+    <div className="p-6 md:p-8 max-w-6xl mx-auto">
+      <PageHeader
+        greeting={`Welcome back, ${firstName}`}
+        sub="Fresh deal flow is waiting. Discover your next investment."
+        action={
+          <Link to="/pitches"
+            className="inline-flex items-center gap-2 text-sm font-black px-5 py-2.5 rounded-lg transition-all hover:opacity-90 flex-shrink-0"
+            style={{ background: '#f59e0b', color: '#000' }}>
+            View Deal Flow <ArrowRight size={14} />
+          </Link>
+        }
+      />
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard icon={PresentationChart} label="Live Pitches"         value={pitches.length}                                                iconColor="#f59e0b" />
+        <StatCard icon={Bank}              label="Syndicates Forming"   value={spvs.filter(s => s.status === 'forming').length || spvs.length} iconColor="#6366f1" />
+        <StatCard icon={CurrencyDollar}    label="Deployed ($K)"        value={deployed > 0 ? Number(deployedStr.replace(/[KM]/,'')) : 675}   iconColor="#10b981" suffix={deployed >= 1_000_000 ? 'M' : 'K'} />
+        <StatCard icon={Users}             label="Platform Investors"   value={investors.length || 4}                                          iconColor="#3b82f6" />
+      </div>
+
+      {/* Pipeline */}
+      <div className="mb-8">
+        <SectionHeader title="Deal Flow Pipeline" />
+        <DealFlowPipeline />
+      </div>
+
+      {/* Live pitches */}
+      {pitches.length > 0 && (
+        <div className="mb-8">
+          <SectionHeader title="Live Pitches — Audit Vetted" linkTo="/pitches" />
+          <div
+            ref={dragPitches.ref}
+            onMouseDown={dragPitches.onMouseDown}
+            onMouseMove={dragPitches.onMouseMove}
+            onMouseUp={dragPitches.onMouseUp}
+            className="flex gap-3 overflow-x-auto pb-2 select-none"
+            style={{ scrollbarWidth: 'none' }}>
+            {pitches.map(p => <PitchMiniCard key={p.id} pitch={p} />)}
+          </div>
+        </div>
+      )}
+
+      {/* Syndicates */}
+      <div className="mb-8">
+        <SectionHeader title="Syndicates Forming Now" linkTo="/spvs" />
         {spvs.length === 0 ? (
-          <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center">
-            <p className="text-base font-semibold text-zinc-900 mb-1">No syndicates forming right now</p>
-            <p className="text-sm text-zinc-600 mb-4">Be the first to lead a syndicate and start earning carry.</p>
-            <Link
-              to="/lead-spv"
-              className="inline-block bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-            >
+          <div className="bg-white rounded-xl border border-gray-100 p-8 text-center">
+            <Bank size={32} className="mx-auto mb-3 text-gray-200" />
+            <p className="font-black text-gray-700 mb-1">No syndicates forming yet</p>
+            <p className="text-gray-400 text-sm mb-4">Be the first to lead a syndicate and earn 20% carried interest.</p>
+            <Link to="/lead-spv"
+              className="inline-flex items-center gap-2 text-sm font-black px-5 py-2.5 rounded-lg"
+              style={{ background: '#060e1f', color: '#fff' }}>
               + Create Syndicate
             </Link>
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-              {spvs.slice(0, 4).map(s => <SPVCard key={s.id} spv={s} />)}
-            </div>
-            <Link
-              to="/lead-spv"
-              className="inline-flex items-center gap-2 bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-            >
-              + Create Syndicate
-            </Link>
-          </>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {spvs.slice(0, 4).map(s => <SPVCard key={s.id} spv={s} />)}
+          </div>
         )}
-      </div>
-
-      {/* Market Insights */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-zinc-900">Market Insights & Deal Flow</h2>
-          <Link to="/pitches" className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-            Browse all pitches →
+        <div className="mt-3">
+          <Link to="/lead-spv"
+            className="inline-flex items-center gap-2 text-sm font-black px-5 py-2.5 rounded-lg transition-all hover:opacity-90"
+            style={{ background: '#060e1f', color: '#fff' }}>
+            + Create Syndicate
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {INVESTOR_INSIGHTS.map((item) => <InsightCard key={item.title} item={item} />)}
+      </div>
+
+      {/* Investors scroll */}
+      {investors.length > 0 && (
+        <div className="mb-8">
+          <SectionHeader title="Active Investors on Platform" linkTo="/investors" linkLabel="Connect" />
+          <div
+            ref={dragInv.ref}
+            onMouseDown={dragInv.onMouseDown}
+            onMouseMove={dragInv.onMouseMove}
+            onMouseUp={dragInv.onMouseUp}
+            className="flex gap-3 overflow-x-auto pb-2 select-none"
+            style={{ scrollbarWidth: 'none' }}>
+            {investors.map(inv => <InvestorMiniCard key={inv.id} inv={inv} />)}
+          </div>
+        </div>
+      )}
+
+      {/* Activity + Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <div className="lg:col-span-2">
+          <SectionHeader title="Platform Activity" />
+          <ActivityFeed />
+        </div>
+        <div>
+          <SectionHeader title="Market Insights" />
+          <div className="flex flex-col gap-2">
+            {[
+              { title: 'AI sector: 2x revenue vs others',          sub: '24 pitches open',    color: '#6366f1' },
+              { title: 'Top deal flow: India, Nigeria, Brazil',     sub: 'Global deal flow',   color: '#10b981' },
+              { title: 'Reply within 48h = 3x faster close',       sub: 'Platform stat',      color: '#f59e0b' },
+              { title: '50-point DD framework — new guide',         sub: 'Education resource', color: '#3b82f6' },
+            ].map(ins => (
+              <Link key={ins.title} to="/education"
+                className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3 hover:shadow-sm transition-shadow">
+                <TrendUp size={14} style={{ color: ins.color }} className="flex-shrink-0" weight="fill" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-gray-800 leading-tight">{ins.title}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{ins.sub}</p>
+                </div>
+                <ArrowRight size={12} className="text-gray-300 flex-shrink-0" />
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Bottom CTA */}
-      <div className="bg-zinc-900 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* CTA strip */}
+      <div className="rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        style={{ background: '#060e1f' }}>
         <div>
-          <p className="text-white font-semibold text-base">Don't miss this week's top pitches</p>
-          <p className="text-zinc-400 text-sm mt-0.5">6 active startups across 5 countries — reviewed and quality-checked.</p>
+          <p className="font-black text-white text-base">Don't miss this week's top pitches</p>
+          <p className="text-white/40 text-sm mt-0.5">
+            {pitches.length} startups — audit-reviewed and quality-checked.
+          </p>
         </div>
-        <Link
-          to="/pitches"
-          className="flex-shrink-0 bg-white hover:bg-zinc-100 text-zinc-900 text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
-        >
-          View Deal Flow →
+        <Link to="/pitches"
+          className="flex-shrink-0 inline-flex items-center gap-2 font-black text-sm px-5 py-2.5 rounded-lg transition-all hover:opacity-90"
+          style={{ background: '#f59e0b', color: '#000' }}>
+          View Deal Flow <ArrowRight size={14} />
         </Link>
       </div>
-
     </div>
   )
+}
 
-  return (
-    <>
-      <main className="bg-zinc-50 min-h-[calc(100vh-64px)]">
-        {mainContent}
-      </main>
+// ── Main export ───────────────────────────────────────────────────────────────
+export default function Dashboard() {
+  const { user } = useAuth()
+  const isE = user?.role === 'entrepreneur'
 
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes scroll-left {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-      `}</style>
-    </>
-  )
+  const [spvs, setSpvs]             = useState([])
+  const [myPitchIds, setMyPitchIds] = useState([])
+  const [myPitch, setMyPitch]       = useState(null)
+
+  useEffect(() => {
+    if (!isE) return
+    api.get('/pitches/')
+      .then(r => {
+        const mine = r.data.filter(p => p.owner_id === user?.id)
+        setMyPitchIds(mine.map(p => p.id))
+        if (mine.length > 0) setMyPitch(mine[0])
+      })
+      .catch(() => {})
+  }, [isE, user?.id])
+
+  useEffect(() => {
+    const url = isE ? '/spvs/' : '/spvs/?status=forming'
+    api.get(url).then(r => setSpvs(r.data)).catch(() => {})
+  }, [isE])
+
+  if (isE) return <EntrepreneurDashboard user={user} myPitch={myPitch} myPitchIds={myPitchIds} spvs={spvs} />
+  return <InvestorDashboard user={user} spvs={spvs} />
 }

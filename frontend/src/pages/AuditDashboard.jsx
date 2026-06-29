@@ -1,17 +1,34 @@
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
-import AuditReportForm from '../components/AuditReportForm'
+import { useNavigate, Link } from 'react-router-dom'
+import {
+  MagnifyingGlass, ArrowsClockwise, ArrowUpRight, CaretUpDown,
+  ShieldCheck, CheckCircle, XCircle, Clock, Funnel,
+} from '@phosphor-icons/react'
 
-const STATUS_OPTIONS = [
-  { value: 'open',     label: 'Under Review', bg: 'bg-amber-50',  text: 'text-amber-700',  border: 'border-amber-200' },
-  { value: 'proceed',  label: 'Approved',      bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-  { value: 'rejected', label: 'Rejected',      bg: 'bg-red-50',    text: 'text-red-600',    border: 'border-red-200' },
-]
+const STATUS_META = {
+  submitted:              { label: 'Submitted',         color: '#6b7280', dot: '#d1d5db', group: 'pending' },
+  screening:              { label: 'Screening',         color: '#92400e', dot: '#fbbf24', group: 'pending' },
+  open:                   { label: 'Pending',           color: '#92400e', dot: '#fbbf24', group: 'pending' },
+  in_progress:            { label: 'In Progress',       color: '#3730a3', dot: '#818cf8', group: 'in_progress' },
+  under_review:           { label: 'Under Review',      color: '#3730a3', dot: '#818cf8', group: 'in_progress' },
+  documents_missing:      { label: 'Docs Missing',      color: '#9a3412', dot: '#f97316', group: 'in_progress' },
+  changes_required:       { label: 'Changes Required',  color: '#9a3412', dot: '#f97316', group: 'in_progress' },
+  approved:               { label: 'Approved',          color: '#065f46', dot: '#34d399', group: 'approved' },
+  approved_with_warnings: { label: 'Approved*',         color: '#92400e', dot: '#fbbf24', group: 'approved' },
+  proceed:                { label: 'Approved',          color: '#065f46', dot: '#34d399', group: 'approved' },
+  rejected:               { label: 'Rejected',          color: '#991b1b', dot: '#f87171', group: 'rejected' },
+}
 
-function statusMeta(v) {
-  return STATUS_OPTIONS.find(s => s.value === v) || STATUS_OPTIONS[0]
+function sm(v) { return STATUS_META[v] || STATUS_META.submitted }
+function groupCount(pitches, group) {
+  return pitches.filter(p => sm(p.audit_status).group === group).length
+}
+
+function fmt(n) {
+  const v = Number(n) || 0
+  return v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${(v / 1_000).toFixed(0)}K`
 }
 
 export default function AuditDashboard() {
@@ -20,10 +37,9 @@ export default function AuditDashboard() {
 
   const [pitches, setPitches] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
-  const [updating, setUpdating] = useState({})
-  const [search, setSearch] = useState('')
-  const [selectedPitch, setSelectedPitch] = useState(null)
+  const [filter, setFilter]   = useState('all')
+  const [search, setSearch]   = useState('')
+  const [sortBy, setSortBy]   = useState('newest')
 
   useEffect(() => {
     if (user?.role !== 'audit') { navigate('/'); return }
@@ -32,241 +48,325 @@ export default function AuditDashboard() {
 
   async function fetchPitches() {
     setLoading(true)
-    try {
-      const { data } = await api.get('/pitches/')
-      setPitches(data)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function setStatus(pitchId, newStatus) {
-    setUpdating(u => ({ ...u, [pitchId]: true }))
-    try {
-      const { data } = await api.patch(`/pitches/${pitchId}/audit`, { audit_status: newStatus })
-      setPitches(ps => ps.map(p => p.id === pitchId ? { ...p, audit_status: data.audit_status } : p))
-    } catch (err) {
-      alert(err?.response?.data?.detail || 'Failed to update status')
-    } finally {
-      setUpdating(u => ({ ...u, [pitchId]: false }))
-    }
+    try { const { data } = await api.get('/pitches/'); setPitches(data) }
+    finally { setLoading(false) }
   }
 
   const counts = {
-    all:      pitches.length,
-    open:     pitches.filter(p => p.audit_status === 'open').length,
-    proceed:  pitches.filter(p => p.audit_status === 'proceed').length,
-    rejected: pitches.filter(p => p.audit_status === 'rejected').length,
+    all:         pitches.length,
+    pending:     groupCount(pitches, 'pending'),
+    in_progress: groupCount(pitches, 'in_progress'),
+    approved:    groupCount(pitches, 'approved'),
+    rejected:    groupCount(pitches, 'rejected'),
   }
 
-  const visible = pitches.filter(p => {
-    const matchFilter = filter === 'all' || p.audit_status === filter
-    const matchSearch = search === '' ||
-      p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.owner?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.industry.toLowerCase().includes(search.toLowerCase())
-    return matchFilter && matchSearch
-  })
+  const visible = pitches
+    .filter(p => {
+      const meta = sm(p.audit_status)
+      const q = search.toLowerCase()
+      const matchS = !q || p.title?.toLowerCase().includes(q) ||
+        p.owner?.full_name?.toLowerCase().includes(q) || p.industry?.toLowerCase().includes(q)
+      const matchF = filter === 'all' ? true : meta.group === filter
+      return matchS && matchF
+    })
+    .sort((a, b) =>
+      sortBy === 'newest'    ? b.id - a.id :
+      sortBy === 'goal_high' ? Number(b.funding_goal) - Number(a.funding_goal) :
+      sortBy === 'goal_low'  ? Number(a.funding_goal) - Number(b.funding_goal) : 0
+    )
 
   if (user?.role !== 'audit') return null
 
+  const STATS = [
+    { key: 'pending',     label: 'Pending Review',    icon: Clock,        value: counts.pending,     accent: '#d97706' },
+    { key: 'in_progress', label: 'In Progress',       icon: ShieldCheck,  value: counts.in_progress, accent: '#4f46e5' },
+    { key: 'approved',    label: 'Approved',           icon: CheckCircle,  value: counts.approved,    accent: '#059669' },
+    { key: 'rejected',    label: 'Rejected',           icon: XCircle,      value: counts.rejected,    accent: '#dc2626' },
+  ]
+
+  const FILTERS = [
+    { key: 'all',         label: 'All',         count: counts.all },
+    { key: 'pending',     label: 'Pending',     count: counts.pending },
+    { key: 'in_progress', label: 'In Progress', count: counts.in_progress },
+    { key: 'approved',    label: 'Approved',    count: counts.approved },
+    { key: 'rejected',    label: 'Rejected',    count: counts.rejected },
+  ]
+
   return (
-    <>
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest mb-1">Internal Tool</p>
-          <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">Audit Dashboard</h1>
-          <p className="text-sm text-zinc-500 mt-1">Review submitted pitches, run due diligence, and submit structured audit reports.</p>
+    <div className="min-h-screen" style={{ background: '#f1f4f8' }}>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* ── Header ─────────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between mb-7">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] mb-1" style={{ color: '#f59e0b' }}>
+              Internal Tool
+            </p>
+            <h1 className="text-[22px] font-black tracking-tight text-gray-900">Audit Dashboard</h1>
+            <p className="text-[13px] text-gray-400 mt-0.5">
+              {counts.all} pitches in queue · {counts.pending} awaiting review
+            </p>
+          </div>
+          <button
+            onClick={fetchPitches}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-semibold border transition-colors"
+            style={{ background: '#fff', border: '1px solid #e2e8f0', color: '#64748b' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+          >
+            <ArrowsClockwise size={13} />
+            Refresh
+          </button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          {[
-            { label: 'Total',        value: counts.all,      key: 'all',      activeColor: 'border-zinc-900' },
-            { label: 'Under Review', value: counts.open,     key: 'open',     activeColor: 'border-amber-500' },
-            { label: 'Approved',     value: counts.proceed,  key: 'proceed',  activeColor: 'border-emerald-500' },
-            { label: 'Rejected',     value: counts.rejected, key: 'rejected', activeColor: 'border-red-500' },
-          ].map(s => (
-            <button
-              key={s.key}
-              onClick={() => setFilter(s.key)}
-              className={`bg-white border rounded-xl p-5 text-left cursor-pointer transition-all hover:shadow-sm ${
-                filter === s.key ? `${s.activeColor} border-2` : 'border-zinc-200'
-              }`}
-            >
-              <div className="text-3xl font-semibold text-zinc-900 leading-none">{s.value}</div>
-              <div className="text-xs text-zinc-500 mt-1.5">{s.label}</div>
-            </button>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div className="mb-5">
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search by pitch title, founder, or industry..."
-            className="w-full sm:max-w-md border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
-          />
-        </div>
-
-        {/* Pitch list */}
-        {loading ? (
-          <div className="bg-white border border-zinc-200 rounded-xl divide-y divide-zinc-100">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="flex items-center gap-4 px-5 py-4 animate-pulse">
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-zinc-100 rounded w-48" />
-                  <div className="h-3 bg-zinc-100 rounded w-64" />
+        {/* ── Stat row ───────────────────────────────────────────────────── */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {STATS.map(s => {
+            const Icon = s.icon
+            const active = filter === s.key
+            return (
+              <button
+                key={s.key}
+                onClick={() => setFilter(active ? 'all' : s.key)}
+                className="text-left rounded-xl px-4 py-3.5 transition-all duration-150"
+                style={{
+                  background: active ? s.accent : '#fff',
+                  border: `1px solid ${active ? s.accent : '#e2e8f0'}`,
+                  boxShadow: active ? `0 2px 12px ${s.accent}25` : 'none',
+                }}
+              >
+                <div className="flex items-center justify-between mb-2.5">
+                  <Icon
+                    size={15}
+                    weight="fill"
+                    style={{ color: active ? 'rgba(255,255,255,0.8)' : s.accent }}
+                  />
+                  <span
+                    className="text-[22px] font-black leading-none"
+                    style={{ color: active ? '#fff' : '#111827' }}
+                  >
+                    {s.value}
+                  </span>
                 </div>
-                <div className="h-7 bg-zinc-100 rounded-lg w-28" />
-              </div>
+                <p
+                  className="text-[11px] font-semibold leading-tight"
+                  style={{ color: active ? 'rgba(255,255,255,0.75)' : '#6b7280' }}
+                >
+                  {s.label}
+                </p>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* ── Toolbar ────────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-2 mb-4">
+          {/* Search */}
+          <div className="relative flex-1 max-w-xs">
+            <MagnifyingGlass
+              size={13}
+              className="absolute left-3 top-1/2 -translate-y-1/2"
+              style={{ color: '#94a3b8' }}
+            />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search pitch, founder, industry…"
+              className="w-full pl-8 pr-3 py-2 rounded-lg text-[12px] focus:outline-none focus:ring-2 focus:ring-amber-300/40"
+              style={{ background: '#fff', border: '1px solid #e2e8f0', color: '#374151' }}
+            />
+          </div>
+
+          {/* Filter pills */}
+          <div className="flex items-center gap-1">
+            {FILTERS.map(f => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors"
+                style={{
+                  background: filter === f.key ? '#0f172a' : '#fff',
+                  color:      filter === f.key ? '#f59e0b' : '#64748b',
+                  border:     `1px solid ${filter === f.key ? '#0f172a' : '#e2e8f0'}`,
+                }}
+              >
+                {f.label}
+                {f.key !== 'all' && f.count > 0 && (
+                  <span className="ml-1 opacity-55">{f.count}</span>
+                )}
+              </button>
             ))}
           </div>
-        ) : visible.length === 0 ? (
-          <div className="bg-white border border-zinc-200 rounded-xl p-16 text-center text-sm text-zinc-400">
-            No pitches match this filter.
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Sort */}
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+              className="appearance-none pl-3 pr-7 py-2 rounded-lg text-[12px] font-medium focus:outline-none focus:ring-2 focus:ring-amber-300/40"
+              style={{ background: '#fff', border: '1px solid #e2e8f0', color: '#374151' }}
+            >
+              <option value="newest">Newest first</option>
+              <option value="goal_high">Goal ↓</option>
+              <option value="goal_low">Goal ↑</option>
+            </select>
+            <CaretUpDown size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
           </div>
-        ) : (
-          <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
-            {/* Table header */}
-            <div className="grid grid-cols-[1fr_140px_110px_100px_auto] gap-4 px-5 py-2.5 border-b border-zinc-100 bg-zinc-50">
-              <span className="text-xs font-medium text-zinc-400">Pitch / Founder</span>
-              <span className="text-xs font-medium text-zinc-400">Industry</span>
-              <span className="text-xs font-medium text-zinc-400">Funding Goal</span>
-              <span className="text-xs font-medium text-zinc-400">Status</span>
-              <span className="text-xs font-medium text-zinc-400">Action</span>
-            </div>
+        </div>
 
-            {/* Rows */}
-            <div className="divide-y divide-zinc-100">
-              {visible.map((pitch, idx) => {
-                const meta = statusMeta(pitch.audit_status)
-                const isUpdating = updating[pitch.id]
-                return (
-                  <div
-                    key={pitch.id}
-                    className={`grid grid-cols-[1fr_140px_110px_100px_auto] gap-4 items-center px-5 py-3.5 ${idx % 2 === 1 ? 'bg-zinc-50/50' : 'bg-white'} hover:bg-zinc-50 transition-colors`}
-                  >
-                    {/* Title + founder */}
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-zinc-900 truncate">{pitch.title}</p>
-                      <p className="text-xs text-zinc-400 truncate">{pitch.owner?.full_name}</p>
-                    </div>
+        {/* ── Table ──────────────────────────────────────────────────────── */}
+        <div className="rounded-xl overflow-hidden" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
 
-                    {/* Industry */}
-                    <div className="min-w-0">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600 truncate">
-                        {pitch.industry}
-                      </span>
-                    </div>
+          {/* Header */}
+          <div
+            className="grid px-5 py-2.5 border-b"
+            style={{
+              gridTemplateColumns: '2fr 130px 100px 160px 120px',
+              borderColor: '#f1f5f9',
+              background: '#fafafa',
+            }}
+          >
+            {['Pitch / Founder', 'Industry', 'Goal', 'Status', 'Action'].map(h => (
+              <span key={h} className="text-[10px] font-black uppercase tracking-widest" style={{ color: '#94a3b8' }}>
+                {h}
+              </span>
+            ))}
+          </div>
 
-                    {/* Funding goal */}
-                    <div>
-                      <span className="text-sm font-medium text-zinc-700">
-                        ${Number(pitch.funding_goal).toLocaleString()}
-                      </span>
-                    </div>
-
-                    {/* Status badge */}
-                    <div>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${meta.bg} ${meta.text} ${meta.border}`}>
-                        {meta.label}
-                      </span>
-                    </div>
-
-                    {/* Action */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => setSelectedPitch(pitch)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
-                      >
-                        Write Report
-                      </button>
-                      <div className="relative group">
-                        <button
-                          disabled={isUpdating}
-                          className="border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-sm font-medium px-2 py-2 rounded-lg transition-colors disabled:opacity-50"
-                          title="Quick status"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01" />
-                          </svg>
-                        </button>
-                        <div className="absolute right-0 top-full mt-1 bg-white border border-zinc-200 rounded-lg shadow-lg z-10 hidden group-hover:block w-36">
-                          {STATUS_OPTIONS.map(opt => (
-                            <button
-                              key={opt.value}
-                              disabled={isUpdating || pitch.audit_status === opt.value}
-                              onClick={() => setStatus(pitch.id, opt.value)}
-                              className={`w-full text-left px-3 py-2 text-xs hover:bg-zinc-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                                pitch.audit_status === opt.value ? 'font-semibold text-zinc-900' : 'text-zinc-600'
-                              }`}
-                            >
-                              {pitch.audit_status === opt.value && <span className="mr-1">✓</span>}
-                              {opt.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <a
-                        href={`/pitches/${pitch.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors whitespace-nowrap"
-                      >
-                        View →
-                      </a>
+          {/* Rows */}
+          {loading ? (
+            <div>
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i}
+                  className="grid px-5 py-3.5 border-b items-center gap-4 animate-pulse"
+                  style={{ gridTemplateColumns: '2fr 130px 100px 160px 120px', borderColor: '#f8fafc' }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0" />
+                    <div className="space-y-1.5">
+                      <div className="h-3 bg-gray-100 rounded w-32" />
+                      <div className="h-2.5 bg-gray-100 rounded w-20" />
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Slide-out audit report panel */}
-      {selectedPitch && (
-        <>
-          <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setSelectedPitch(null)} />
-          <div className="fixed right-0 top-16 h-[calc(100vh-64px)] w-[520px] max-w-full bg-white shadow-2xl border-l border-zinc-200 z-50 flex flex-col">
-            {/* Panel header */}
-            <div className="flex items-start justify-between px-5 py-4 border-b border-zinc-100 flex-shrink-0">
-              <div>
-                <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest mb-0.5">Audit Report</p>
-                <h2 className="text-sm font-semibold text-zinc-900 leading-tight">{selectedPitch.title}</h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-zinc-500">{selectedPitch.owner?.full_name}</span>
-                  <span className="text-zinc-300">·</span>
-                  <span className="text-xs text-zinc-500">{selectedPitch.industry}</span>
-                  <span className="text-zinc-300">·</span>
-                  <span className="text-xs font-medium text-zinc-700">${Number(selectedPitch.funding_goal).toLocaleString()}</span>
+                  <div className="h-5 bg-gray-100 rounded-lg w-20" />
+                  <div className="h-3 bg-gray-100 rounded w-14" />
+                  <div className="h-5 bg-gray-100 rounded-full w-24" />
+                  <div className="h-7 bg-gray-100 rounded-lg w-24" />
                 </div>
-              </div>
-              <button
-                onClick={() => setSelectedPitch(null)}
-                className="w-7 h-7 rounded-lg border border-zinc-200 hover:bg-zinc-50 flex items-center justify-center text-zinc-500 text-lg leading-none flex-shrink-0 transition-colors ml-3"
-              >
-                ×
-              </button>
+              ))}
             </div>
+          ) : visible.length === 0 ? (
+            <div className="py-16 text-center">
+              <ShieldCheck size={32} className="mx-auto mb-3" style={{ color: '#cbd5e1' }} />
+              <p className="text-sm font-semibold text-gray-500">No pitches found</p>
+              <p className="text-xs text-gray-400 mt-1">Adjust your search or filter</p>
+            </div>
+          ) : (
+            visible.map((pitch, idx) => {
+              const meta = sm(pitch.audit_status)
+              return (
+                <div
+                  key={pitch.id}
+                  className="grid px-5 py-3 items-center gap-4 border-b transition-colors hover:bg-slate-50/60"
+                  style={{
+                    gridTemplateColumns: '2fr 130px 100px 160px 120px',
+                    borderColor: '#f8fafc',
+                  }}
+                >
+                  {/* Pitch */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-black flex-shrink-0"
+                      style={{ background: '#0f172a', color: '#f59e0b' }}
+                    >
+                      {pitch.title?.[0]?.toUpperCase() || 'P'}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-gray-900 truncate leading-tight">
+                        {pitch.title}
+                      </p>
+                      <p className="text-[11px] text-gray-400 truncate leading-tight mt-0.5">
+                        {pitch.owner?.full_name}
+                      </p>
+                    </div>
+                  </div>
 
-            {/* Panel body */}
-            <div className="flex-1 overflow-y-auto p-5">
-              <AuditReportForm
-                pitch={selectedPitch}
-                onSuccess={() => {
-                  setSelectedPitch(null)
-                  fetchPitches()
-                }}
-              />
+                  {/* Industry */}
+                  <span
+                    className="text-[11px] font-medium px-2 py-1 rounded-md truncate w-fit"
+                    style={{ background: '#f1f5f9', color: '#475569' }}
+                  >
+                    {pitch.industry}
+                  </span>
+
+                  {/* Goal */}
+                  <span className="text-[13px] font-semibold text-gray-800">
+                    {fmt(pitch.funding_goal)}
+                  </span>
+
+                  {/* Status */}
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: meta.dot }}
+                    />
+                    <span
+                      className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
+                      style={{
+                        background: `${meta.color}12`,
+                        color: meta.color,
+                        border: `1px solid ${meta.color}25`,
+                      }}
+                    >
+                      {meta.label}
+                    </span>
+                  </div>
+
+                  {/* Action */}
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/audit/${pitch.id}`}
+                      className="flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all"
+                      style={{ background: '#0f172a', color: '#f59e0b' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#1e293b'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#0f172a'}
+                    >
+                      Open
+                      <ArrowUpRight size={11} weight="bold" />
+                    </Link>
+                    <Link
+                      to={`/pitches/${pitch.id}`}
+                      className="text-[11px] font-medium transition-colors"
+                      style={{ color: '#94a3b8' }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#475569'}
+                      onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+              )
+            })
+          )}
+
+          {/* Footer */}
+          {!loading && visible.length > 0 && (
+            <div className="px-5 py-2.5 flex items-center justify-between" style={{ borderTop: '1px solid #f1f5f9' }}>
+              <p className="text-[11px]" style={{ color: '#94a3b8' }}>
+                Showing <span className="font-semibold text-gray-600">{visible.length}</span> of{' '}
+                <span className="font-semibold text-gray-600">{counts.all}</span> pitches
+              </p>
+              <p className="text-[11px]" style={{ color: '#94a3b8' }}>
+                Last refreshed just now
+              </p>
             </div>
-          </div>
-        </>
-      )}
-    </>
+          )}
+        </div>
+
+      </div>
+    </div>
   )
 }

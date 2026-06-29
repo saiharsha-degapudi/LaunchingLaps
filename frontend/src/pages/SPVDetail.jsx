@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 import FundingMeter from '../components/FundingMeter'
+import { WordReveal, Card3D, MeshGradient, StatCounter, useScrollReveal } from '../utils/design'
 
 function fmt(n) {
   if (!n && n !== 0) return '—'
@@ -37,6 +38,7 @@ function StatusBadge({ status }) {
 }
 
 export default function SPVDetail() {
+  useScrollReveal()
   const { id } = useParams()
   const { user } = useAuth()
 
@@ -140,34 +142,57 @@ export default function SPVDetail() {
 
   return (
     <div className="bg-zinc-50 min-h-screen">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-10">
         {/* Back */}
-        <Link to="/spvs" className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 mb-6 transition-colors">
+        <Link to="/spvs" className="reveal inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-900 mb-6 transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Back to Syndicates
         </Link>
 
+        {/* Hero */}
+        <div className="reveal bg-white border border-zinc-200 rounded-xl p-8 mb-6">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <StatusBadge status={spv.status} />
+              {spv.pitch_industry && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
+                  {spv.pitch_industry}
+                </span>
+              )}
+            </div>
+            <WordReveal
+              text={spv.title}
+              tag="h1"
+              className="text-3xl font-bold text-zinc-900 tracking-tight mb-6"
+            />
+            {/* Animated stat strip */}
+            <div className="grid grid-cols-3 gap-6 pt-4 border-t border-zinc-100">
+              <StatCounter
+                target={spv.committed_amount ?? 0}
+                prefix="$"
+                label="Total Raised"
+              />
+              <StatCounter
+                target={spv.backer_count ?? 0}
+                label="Investors"
+              />
+              <StatCounter
+                target={spv.target_amount ?? 0}
+                prefix="$"
+                label="Target"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ── LEFT COLUMN ── */}
           <div className="lg:col-span-2 flex flex-col gap-5">
 
-            {/* Title block */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <StatusBadge status={spv.status} />
-                {spv.pitch_industry && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">
-                    {spv.pitch_industry}
-                  </span>
-                )}
-              </div>
-              <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">{spv.title}</h1>
-            </div>
-
             {/* Associated pitch */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-5">
+            <div className="reveal bg-white border border-zinc-200 rounded-xl p-5">
               <p className="text-xs font-medium text-zinc-500 mb-3">Associated Pitch</p>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
@@ -185,13 +210,13 @@ export default function SPVDetail() {
                   to={`/pitches/${spv.pitch_id}`}
                   className="flex-shrink-0 border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                 >
-                  View Pitch →
+                  View Pitch
                 </Link>
               </div>
             </div>
 
             {/* Investment thesis */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-5">
+            <div className="reveal reveal-delay-1 bg-white border border-zinc-200 rounded-xl p-5">
               <p className="text-xs font-medium text-zinc-500 mb-3">Investment Thesis</p>
               <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-wrap">
                 {spv.description || 'No investment thesis provided.'}
@@ -211,7 +236,7 @@ export default function SPVDetail() {
                 return { n, profit, leadCarry, lpNet, lpMultiple }
               })
               return (
-                <div className="bg-white border border-zinc-200 rounded-xl p-5">
+                <div className="reveal reveal-delay-2 bg-white border border-zinc-200 rounded-xl p-5">
                   <p className="text-xs font-medium text-zinc-500 mb-4">Investment Details &amp; Projections</p>
 
                   <div className="grid grid-cols-3 gap-3 mb-5">
@@ -240,9 +265,9 @@ export default function SPVDetail() {
                       <thead className="bg-zinc-50">
                         <tr>
                           <th className="text-left px-3 py-2.5 text-zinc-400 font-medium">Metric</th>
-                          <th className="text-right px-3 py-2.5 text-zinc-600 font-medium">3× Exit</th>
-                          <th className="text-right px-3 py-2.5 text-zinc-600 font-medium">5× Exit</th>
-                          <th className="text-right px-3 py-2.5 text-zinc-600 font-medium">10× Exit</th>
+                          <th className="text-right px-3 py-2.5 text-zinc-600 font-medium">3x Exit</th>
+                          <th className="text-right px-3 py-2.5 text-zinc-600 font-medium">5x Exit</th>
+                          <th className="text-right px-3 py-2.5 text-zinc-600 font-medium">10x Exit</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-50">
@@ -273,7 +298,7 @@ export default function SPVDetail() {
                         <tr>
                           <td className="px-3 py-2.5 text-zinc-500">Per $1 Invested (LP)</td>
                           {scenarios.map(({ n, lpMultiple }) => (
-                            <td key={n} className="px-3 py-2.5 text-right font-semibold text-zinc-900">{lpMultiple.toFixed(2)}×</td>
+                            <td key={n} className="px-3 py-2.5 text-right font-semibold text-zinc-900">{lpMultiple.toFixed(2)}x</td>
                           ))}
                         </tr>
                       </tbody>
@@ -291,7 +316,7 @@ export default function SPVDetail() {
                           const myProfit = myReturn - myCommitment.amount
                           return (
                             <div key={n} className="text-center bg-white rounded-lg p-2.5">
-                              <p className="text-xs text-zinc-400">{n}× Exit</p>
+                              <p className="text-xs text-zinc-400">{n}x Exit</p>
                               <p className="text-sm font-semibold text-zinc-900 mt-0.5">{fmt(myReturn)}</p>
                               <p className="text-xs text-green-600">+{fmt(myProfit)}</p>
                             </div>
@@ -309,7 +334,7 @@ export default function SPVDetail() {
             })()}
 
             {/* Commitments list */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-5">
+            <div className="reveal reveal-delay-3 bg-white border border-zinc-200 rounded-xl p-5">
               <p className="text-xs font-medium text-zinc-500 mb-3">
                 Commitments ({spv.backer_count ?? commitments.length})
               </p>
@@ -319,7 +344,10 @@ export default function SPVDetail() {
                 ) : (
                   <div className="divide-y divide-zinc-50">
                     {commitments.map((c, i) => (
-                      <div key={i} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                      <div
+                        key={i}
+                        className={`reveal reveal-delay-${Math.min(i + 1, 5)} flex items-center justify-between py-3 first:pt-0 last:pb-0`}
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-white text-xs font-medium">
                             {c.investor_name?.charAt(0) ?? '?'}
@@ -351,7 +379,7 @@ export default function SPVDetail() {
           <div className="flex flex-col gap-4">
 
             {/* SPV Terms */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-5">
+            <div className="reveal bg-white border border-zinc-200 rounded-xl p-5">
               <p className="text-xs font-medium text-zinc-500 mb-4">Syndicate Terms</p>
 
               <div className="mb-4">
@@ -381,7 +409,7 @@ export default function SPVDetail() {
             </div>
 
             {/* Lead Investor */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-5">
+            <div className="reveal reveal-delay-1 bg-white border border-zinc-200 rounded-xl p-5">
               <p className="text-xs font-medium text-zinc-500 mb-4">Lead Investor</p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
@@ -398,7 +426,7 @@ export default function SPVDetail() {
 
             {/* Lead notice */}
             {isLead && (
-              <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-5">
+              <div className="reveal reveal-delay-2 bg-zinc-50 border border-zinc-200 rounded-xl p-5">
                 <h3 className="text-sm font-semibold text-zinc-900 mb-1">You are leading this Syndicate</h3>
                 <p className="text-xs text-zinc-500 leading-relaxed">
                   As the lead investor you earn {spv.carry_pct}% carry on returns. Share this syndicate link with co-investors to fill your round.
@@ -406,69 +434,71 @@ export default function SPVDetail() {
               </div>
             )}
 
-            {/* Commit form */}
+            {/* Commit form — wrapped in Card3D for CTA card */}
             {canCommit && (
-              <div className="bg-white border border-zinc-200 rounded-xl p-5">
-                <p className="text-xs font-medium text-zinc-500 mb-4">
-                  {myCommitment ? 'Your Commitment' : 'Commit to this Syndicate'}
-                </p>
+              <Card3D>
+                <div className="reveal reveal-delay-2 bg-white border border-zinc-200 rounded-xl p-5">
+                  <p className="text-xs font-medium text-zinc-500 mb-4">
+                    {myCommitment ? 'Your Commitment' : 'Commit to this Syndicate'}
+                  </p>
 
-                {myCommitment ? (
-                  <div>
-                    <p className="text-sm text-zinc-600 mb-1">
-                      You have committed <span className="font-semibold text-zinc-900">{fmt(myCommitment.amount)}</span>.
-                    </p>
-                    {spv.status === 'forming' && (
-                      <button
-                        onClick={handleWithdraw}
-                        disabled={loadingCommit}
-                        className="mt-3 w-full border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        {loadingCommit ? 'Withdrawing…' : 'Withdraw Commitment'}
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <form onSubmit={handleCommit} className="flex flex-col gap-3">
+                  {myCommitment ? (
                     <div>
-                      <label className="block text-xs font-medium text-zinc-500 mb-1.5">
-                        Amount (USD) — min {fmt(spv.min_check)}
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">$</span>
-                        <input
-                          type="number"
-                          value={amount}
-                          onChange={e => setAmount(e.target.value)}
-                          min={spv.min_check}
-                          step="1000"
-                          placeholder={String(spv.min_check)}
-                          className="w-full pl-7 pr-3 border border-zinc-200 rounded-lg py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
-                          required
-                        />
-                      </div>
+                      <p className="text-sm text-zinc-600 mb-1">
+                        You have committed <span className="font-semibold text-zinc-900">{fmt(myCommitment.amount)}</span>.
+                      </p>
+                      {spv.status === 'forming' && (
+                        <button
+                          onClick={handleWithdraw}
+                          disabled={loadingCommit}
+                          className="mt-3 w-full border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          {loadingCommit ? 'Withdrawing...' : 'Withdraw Commitment'}
+                        </button>
+                      )}
                     </div>
-                    {commitError && <p className="text-red-500 text-xs">{commitError}</p>}
-                    {commitMsg && <p className="text-green-600 text-xs font-medium">{commitMsg}</p>}
-                    <button
-                      type="submit"
-                      disabled={loadingCommit}
-                      className="w-full bg-zinc-900 hover:bg-zinc-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50"
-                    >
-                      {loadingCommit ? 'Submitting…' : 'Commit →'}
-                    </button>
-                  </form>
-                )}
+                  ) : (
+                    <form onSubmit={handleCommit} className="flex flex-col gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-zinc-500 mb-1.5">
+                          Amount (USD) — min {fmt(spv.min_check)}
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">$</span>
+                          <input
+                            type="number"
+                            value={amount}
+                            onChange={e => setAmount(e.target.value)}
+                            min={spv.min_check}
+                            step="1000"
+                            placeholder={String(spv.min_check)}
+                            className="w-full pl-7 pr-3 border border-zinc-200 rounded-lg py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
+                            required
+                          />
+                        </div>
+                      </div>
+                      {commitError && <p className="text-red-500 text-xs">{commitError}</p>}
+                      {commitMsg && <p className="text-green-600 text-xs font-medium">{commitMsg}</p>}
+                      <button
+                        type="submit"
+                        disabled={loadingCommit}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                      >
+                        {loadingCommit ? 'Submitting...' : 'Commit to Syndicate'}
+                      </button>
+                    </form>
+                  )}
 
-                {commitMsg && !myCommitment && (
-                  <p className="text-green-600 text-xs font-medium mt-2">{commitMsg}</p>
-                )}
-              </div>
+                  {commitMsg && !myCommitment && (
+                    <p className="text-green-600 text-xs font-medium mt-2">{commitMsg}</p>
+                  )}
+                </div>
+              </Card3D>
             )}
 
             {/* Entrepreneur progress */}
             {isEntrepreneur && (
-              <div className="bg-white border border-zinc-200 rounded-xl p-5">
+              <div className="reveal reveal-delay-3 bg-white border border-zinc-200 rounded-xl p-5">
                 <p className="text-xs font-medium text-zinc-500 mb-3">Funding Progress</p>
                 <FundingMeter
                   committed={spv.committed_amount}

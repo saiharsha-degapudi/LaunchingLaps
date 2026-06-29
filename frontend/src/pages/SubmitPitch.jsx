@@ -1,8 +1,18 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 import PitchReadiness from '../components/PitchReadiness'
+import { useScrollReveal } from '../utils/design'
+
+const STAGES = [
+  { value: 'validation', label: 'Validation', desc: 'Problem research, no product yet' },
+  { value: 'idea',       label: 'Idea',       desc: 'Concept defined, pre-MVP' },
+  { value: 'pre_seed',   label: 'Pre-Seed',   desc: 'MVP in development, pre-launch' },
+  { value: 'seed',       label: 'Seed',       desc: 'MVP live, early customers' },
+  { value: 'series_a',   label: 'Series A',   desc: 'Revenue traction, scaling GTM' },
+  { value: 'growth',     label: 'Growth',     desc: 'Established, high-growth phase' },
+]
 
 const INDUSTRIES = [
   'Technology', 'FinTech', 'HealthTech', 'EdTech', 'AgriTech',
@@ -44,7 +54,7 @@ const INDUSTRY_DEFAULTS = {
   CleanTech: {
     stage: 'seed',
     funding_goal: '1500000',
-    descriptionTemplate: `Problem: [Environmental challenge — emissions, waste, energy access]\n\nSolution: [Your clean technology — solar, EV, carbon capture, recycling, etc.]\n\nTraction: [Units deployed, carbon offset, revenue, partnerships]\n\nAsk: $1.5M for [pilot scaling / manufacturing / regulatory approvals]\n\nImpact: [CO₂ reduced per year, energy generated, communities served]`,
+    descriptionTemplate: `Problem: [Environmental challenge — emissions, waste, energy access]\n\nSolution: [Your clean technology — solar, EV, carbon capture, recycling, etc.]\n\nTraction: [Units deployed, carbon offset, revenue, partnerships]\n\nAsk: $1.5M for [pilot scaling / manufacturing / regulatory approvals]\n\nImpact: [CO2 reduced per year, energy generated, communities served]`,
     hint: 'CleanTech seed: $500K–$5M; government grants often available',
   },
   'E-commerce': {
@@ -92,21 +102,56 @@ const INDUSTRY_DEFAULTS = {
 }
 
 export default function SubmitPitch() {
+  useScrollReveal()
+
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { id } = useParams()
+  const isEdit = !!id
 
   const [form, setForm] = useState({
-    title: '', description: '', industry: '',
+    title: '', industry: '', description: '',
     funding_goal: '', stage: 'idea', deck_url: '', video_url: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [loadingPitch, setLoadingPitch] = useState(isEdit)
+
+  useEffect(() => {
+    if (!isEdit) return
+    api.get(`/pitches/${id}`).then(({ data }) => {
+      setForm({
+        title: data.title || '',
+        industry: data.industry || '',
+        description: data.description || '',
+        funding_goal: data.funding_goal != null ? String(data.funding_goal) : '',
+        stage: data.stage || 'idea',
+        deck_url: data.deck_url || '',
+        video_url: data.video_url || '',
+      })
+    }).catch(() => {
+      setError('Could not load pitch. It may not exist or you may not have access.')
+    }).finally(() => setLoadingPitch(false))
+  }, [id, isEdit])
+
+  if (loadingPitch) {
+    return (
+      <div className="bg-zinc-50 min-h-screen flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   if (user?.role !== 'entrepreneur') {
     return (
-      <div className="max-w-xl mx-auto px-6 py-20 text-center">
-        <div className="bg-white border border-zinc-200 rounded-xl p-8">
+      <div className="bg-zinc-50 min-h-screen flex items-center justify-center px-6">
+        <div className="bg-white border border-zinc-200 rounded-xl p-8 max-w-md w-full text-center">
+          <div className="w-10 h-10 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
           <p className="text-zinc-900 font-semibold text-base mb-2">Access Restricted</p>
           <p className="text-zinc-500 text-sm">Only entrepreneurs can submit pitches.</p>
         </div>
@@ -147,7 +192,9 @@ export default function SubmitPitch() {
       }
       if (form.deck_url) payload.deck_url = form.deck_url
       if (form.video_url) payload.video_url = form.video_url
-      const { data } = await api.post('/pitches/', payload)
+      const { data } = isEdit
+        ? await api.put(`/pitches/${id}`, payload)
+        : await api.post('/pitches/', payload)
       setSuccess(true)
       setTimeout(() => navigate(`/pitches/${data.id}`), 1500)
     } catch (err) {
@@ -159,20 +206,21 @@ export default function SubmitPitch() {
 
   if (success) {
     return (
-      <div className="max-w-xl mx-auto px-6 py-20 text-center">
-        <div className="bg-white border border-zinc-200 rounded-xl p-8 flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-            <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="bg-zinc-50 min-h-screen flex items-center justify-center px-6">
+        <div className="bg-white border border-zinc-200 rounded-xl p-10 max-w-md w-full text-center flex flex-col items-center gap-4">
+          <div className="w-14 h-14 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+            <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Pitch Submitted</h2>
-            <p className="text-sm text-zinc-500 mt-1">Our audit team will review your pitch within 24–48 hours.</p>
+            <h2 className="text-lg font-semibold text-zinc-900">{isEdit ? 'Pitch Updated' : 'Pitch Submitted'}</h2>
+            <p className="text-sm text-zinc-500 mt-1">{isEdit ? 'Your pitch details have been saved.' : 'Our audit team will review your pitch within 24–48 hours.'}</p>
           </div>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
             Under Review
           </span>
+          <p className="text-xs text-zinc-400">Redirecting you to your pitch...</p>
         </div>
       </div>
     )
@@ -180,152 +228,217 @@ export default function SubmitPitch() {
 
   return (
     <div className="bg-zinc-50 min-h-screen">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-10">
+
         {/* Page header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">Submit Your Pitch</h1>
-          <p className="text-sm text-zinc-500 mt-1">Tell us about your startup. Our audit team will review it within 24–48 hours.</p>
+        <div className="mb-8 reveal">
+          <span className="inline-block text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-md mb-3">
+            Entrepreneur Portal
+          </span>
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">{isEdit ? 'Edit Your Pitch' : 'Submit Your Pitch'}</h1>
+          <p className="text-sm text-zinc-500 mt-1.5">{isEdit ? 'Update your pitch details. Changes are saved immediately.' : 'Tell us about your startup. Our audit team reviews within 24–48 hours.'}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-          {/* LEFT — Pitch Form (2/3 width) */}
-          <div className="lg:col-span-2 bg-white border border-zinc-200 rounded-xl p-5">
-            <h2 className="text-base font-semibold text-zinc-900 mb-5">Pitch Details</h2>
+          {/* LEFT — Single-page form */}
+          <div className="lg:col-span-2">
+            <div className="bg-white border border-zinc-200 rounded-xl p-6">
 
-            {error && (
-              <div className="mb-5 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
+                {error && (
+                  <div className="mb-5 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg flex items-start gap-2">
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {error}
+                  </div>
+                )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              <div>
-                <label htmlFor="title" className="block text-xs font-medium text-zinc-500 mb-1.5">Pitch Title *</label>
-                <input
-                  id="title" name="title" type="text" required
-                  value={form.title} onChange={handleChange}
-                  placeholder="e.g. AI-powered supply chain for emerging markets"
-                  className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
-                />
-              </div>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
-              <div>
-                <label htmlFor="description" className="block text-xs font-medium text-zinc-500 mb-1.5">Description *</label>
-                <textarea
-                  id="description" name="description" rows={6} required
-                  value={form.description} onChange={handleChange}
-                  placeholder="Describe the problem you're solving, your solution, and any traction so far..."
-                  className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white resize-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="industry" className="block text-xs font-medium text-zinc-500 mb-1.5">Industry *</label>
-                  <select
-                    id="industry" name="industry" required
-                    value={form.industry} onChange={handleChange}
-                    className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
-                  >
-                    <option value="">Select...</option>
-                    {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
-                  </select>
-                  {form.industry && INDUSTRY_DEFAULTS[form.industry] && (
-                    <p className="text-xs text-blue-600 mt-1.5 font-medium">
-                      {INDUSTRY_DEFAULTS[form.industry].hint}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label htmlFor="stage" className="block text-xs font-medium text-zinc-500 mb-1.5">Stage *</label>
-                  <select
-                    id="stage" name="stage" required
-                    value={form.stage} onChange={handleChange}
-                    className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
-                  >
-                    <option value="idea">Idea</option>
-                    <option value="seed">Seed</option>
-                    <option value="growth">Growth</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="funding_goal" className="block text-xs font-medium text-zinc-500 mb-1.5">Funding Goal (USD) *</label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">$</span>
-                  <input
-                    id="funding_goal" name="funding_goal" type="number" min="1000" step="1000"
-                    required value={form.funding_goal} onChange={handleChange}
-                    placeholder="250000"
-                    className="w-full border border-zinc-200 rounded-lg pl-7 pr-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
-                  />
-                </div>
-              </div>
-
-              <div className="border-t border-zinc-100 pt-5">
-                <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-4">Optional Media</p>
-                <div className="flex flex-col gap-4">
+                  {/* Title */}
                   <div>
-                    <label htmlFor="deck_url" className="block text-xs font-medium text-zinc-500 mb-1.5">
-                      Pitch Deck URL <span className="text-zinc-400 font-normal">(optional)</span>
+                    <label htmlFor="title" className="block text-xs font-medium text-zinc-500 mb-1.5">
+                      Pitch Title <span className="text-red-400">*</span>
                     </label>
                     <input
-                      id="deck_url" name="deck_url" type="url"
-                      value={form.deck_url} onChange={handleChange}
-                      placeholder="https://drive.google.com/..."
-                      className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
+                      id="title" name="title" type="text" required
+                      value={form.title} onChange={handleChange}
+                      placeholder="e.g. AI-powered supply chain for emerging markets"
+                      className="input"
                     />
                   </div>
-                  <div>
-                    <label htmlFor="video_url" className="block text-xs font-medium text-zinc-500 mb-1.5">
-                      Video Pitch URL <span className="text-zinc-400 font-normal">(optional)</span>
-                    </label>
-                    <input
-                      id="video_url" name="video_url" type="url"
-                      value={form.video_url} onChange={handleChange}
-                      placeholder="https://youtube.com/..."
-                      className="w-full border border-zinc-200 rounded-lg px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              <div className="flex gap-3 pt-2 border-t border-zinc-100">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                      </svg>
-                      Submitting...
-                    </>
-                  ) : 'Submit Pitch'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate(-1)}
-                  className="border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+                  {/* Industry — BEFORE description */}
+                  <div>
+                    <label htmlFor="industry" className="block text-xs font-medium text-zinc-500 mb-1.5">
+                      Industry <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                      id="industry" name="industry" required
+                      value={form.industry} onChange={handleChange}
+                      className="input"
+                    >
+                      <option value="">Select an industry…</option>
+                      {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+                    </select>
+                    {form.industry && INDUSTRY_DEFAULTS[form.industry] && (
+                      <p className="text-xs text-blue-600 mt-1.5 font-medium">
+                        💡 {INDUSTRY_DEFAULTS[form.industry].hint}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Description — auto-filled by industry */}
+                  <div>
+                    <label htmlFor="description" className="block text-xs font-medium text-zinc-500 mb-1.5">
+                      Description <span className="text-red-400">*</span>
+                      {!form.industry && <span className="text-zinc-400 font-normal ml-1">(select an industry above to pre-fill a template)</span>}
+                    </label>
+                    <textarea
+                      id="description" name="description" rows={9} required
+                      value={form.description} onChange={handleChange}
+                      placeholder="Describe the problem you're solving, your solution, and any traction so far..."
+                      className="input resize-none font-mono text-xs"
+                    />
+                  </div>
+
+                  {/* Stage + Funding Goal */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="stage" className="block text-xs font-medium text-zinc-500 mb-1.5">
+                        Stage <span className="text-red-400">*</span>
+                      </label>
+                      <select
+                        id="stage" name="stage" required
+                        value={form.stage} onChange={handleChange}
+                        className="input"
+                      >
+                        {STAGES.map(s => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="funding_goal" className="block text-xs font-medium text-zinc-500 mb-1.5">
+                        Funding Goal (USD) <span className="text-red-400">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-sm font-medium">$</span>
+                        <input
+                          id="funding_goal" name="funding_goal" type="number" min="1000" step="1000"
+                          required value={form.funding_goal} onChange={handleChange}
+                          placeholder="250000"
+                          className="input pl-7"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stage cards */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {STAGES.map(s => (
+                      <button
+                        key={s.value} type="button"
+                        onClick={() => setForm(prev => ({ ...prev, stage: s.value }))}
+                        className={`text-left p-3 rounded-lg border transition-all ${
+                          form.stage === s.value ? 'border-blue-500 bg-blue-50' : 'border-zinc-200 bg-white hover:border-zinc-300'
+                        }`}
+                      >
+                        <p className={`text-xs font-semibold ${form.stage === s.value ? 'text-blue-600' : 'text-zinc-700'}`}>{s.label}</p>
+                        <p className="text-xs text-zinc-400 mt-0.5 leading-snug">{s.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Optional media */}
+                  <div className="border-t border-zinc-100 pt-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Optional Media</span>
+                      <span className="h-px flex-1 bg-zinc-100" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="deck_url" className="block text-xs font-medium text-zinc-500 mb-1.5">
+                          Pitch Deck URL
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2">
+                            <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </span>
+                          <input
+                            id="deck_url" name="deck_url" type="url"
+                            value={form.deck_url} onChange={handleChange}
+                            placeholder="https://drive.google.com/..."
+                            className="input pl-9"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label htmlFor="video_url" className="block text-xs font-medium text-zinc-500 mb-1.5">
+                          Video Pitch URL
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2">
+                            <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.362a1 1 0 01-1.447.894L15 14M4 8a2 2 0 012-2h9a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8z" />
+                            </svg>
+                          </span>
+                          <input
+                            id="video_url" name="video_url" type="url"
+                            value={form.video_url} onChange={handleChange}
+                            placeholder="https://youtube.com/..."
+                            className="input pl-9"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3 pt-2 border-t border-zinc-100">
+                    <button
+                      type="submit" disabled={loading}
+                      className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                      {loading ? (
+                        <>
+                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                          </svg>
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          {isEdit ? 'Save Changes' : 'Submit Pitch'}
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                    <button type="button" onClick={() => navigate(-1)} className="btn-secondary">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+            </div>
           </div>
 
-          {/* RIGHT — Readiness Panel (1/3 width, sticky) */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 sticky top-6">
+          {/* RIGHT — Pitch Readiness panel */}
+          <div className="reveal bg-white border border-zinc-200 rounded-xl p-5 sticky top-6">
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-base font-semibold text-zinc-900">Pitch Readiness</h2>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600">By LaunchingLaps</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
+                By LaunchingLaps
+              </span>
             </div>
-            <p className="text-xs text-zinc-400 mb-5">Answer a few quick questions to check how ready your pitch is before submitting.</p>
+            <p className="text-xs text-zinc-400 mb-5">
+              Answer a few quick questions to check how ready your pitch is before submitting.
+            </p>
             <PitchReadiness industry={form.industry} />
           </div>
 

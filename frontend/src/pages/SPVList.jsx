@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 import SPVCard from '../components/SPVCard'
+import { WordReveal, PageHeader, useScrollReveal, useDragScroll } from '../utils/design'
 
 const TABS = [
   { key: '', label: 'All' },
@@ -12,6 +13,7 @@ const TABS = [
 ]
 
 export default function SPVList() {
+  useScrollReveal()
   const { user } = useAuth()
   const isInvestor = user?.role === 'investor'
   const isEntrepreneur = user?.role === 'entrepreneur'
@@ -21,6 +23,9 @@ export default function SPVList() {
   const [myPitchIds, setMyPitchIds] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  const filterScrollRef = useRef(null)
+  const dragScroll = useDragScroll()
 
   useEffect(() => {
     if (!isEntrepreneur) {
@@ -50,14 +55,19 @@ export default function SPVList() {
 
   return (
     <div className="bg-zinc-50 min-h-screen">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-10">
         {/* Page header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="reveal flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-zinc-900 tracking-tight">
-              {isEntrepreneur ? 'Syndicates Funding Your Pitch' : 'Syndicate Opportunities'}
-            </h1>
-            <p className="text-sm text-zinc-500 mt-1">
+            <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest mb-2">
+              {isEntrepreneur ? 'Funding Activity' : 'Invest Together'}
+            </p>
+            <WordReveal
+              text={isEntrepreneur ? 'Syndicates Funding Your Pitch' : 'Syndicate Opportunities'}
+              tag="h1"
+              className="text-2xl font-bold text-zinc-900 tracking-tight"
+            />
+            <p className="text-sm text-zinc-500 mt-2">
               {isEntrepreneur
                 ? 'Investors can pool capital through a syndicate to back your startup.'
                 : 'Join or create a syndicate to invest in high-potential startups.'}
@@ -66,28 +76,42 @@ export default function SPVList() {
           {isInvestor && (
             <Link
               to="/lead-spv"
-              className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              className="flex-shrink-0 btn-primary"
             >
               + Create Syndicate
             </Link>
           )}
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {TABS.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === tab.key
-                  ? 'bg-zinc-900 text-white'
-                  : 'border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Filter strip — horizontally scrollable with drag */}
+        <div className="reveal reveal-delay-1 relative mb-6">
+          <div
+            ref={dragScroll.ref}
+            onMouseDown={dragScroll.onMouseDown}
+            onMouseMove={dragScroll.onMouseMove}
+            onMouseUp={dragScroll.onMouseUp}
+            style={{
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+              WebkitOverflowScrolling: 'touch',
+              maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)',
+            }}
+            className="flex gap-2 pb-1 cursor-grab active:cursor-grabbing"
+          >
+            {TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                  activeTab === tab.key
+                    ? 'bg-zinc-900 text-white'
+                    : 'border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Content */}
@@ -96,7 +120,7 @@ export default function SPVList() {
             <div className="w-8 h-8 border-2 border-zinc-200 border-t-zinc-700 rounded-full animate-spin" />
           </div>
         ) : error ? (
-          <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center">
+          <div className="reveal bg-white border border-zinc-200 rounded-xl p-8 text-center">
             <p className="text-sm text-red-600">{error}</p>
             <button
               onClick={() => setActiveTab(activeTab)}
@@ -106,8 +130,8 @@ export default function SPVList() {
             </button>
           </div>
         ) : visibleSpvs.length === 0 ? (
-          <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center">
-            <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="reveal bg-white border border-zinc-200 rounded-xl p-12 text-center">
+            <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
@@ -129,8 +153,13 @@ export default function SPVList() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {visibleSpvs.map(spv => (
-              <SPVCard key={spv.id} spv={spv} />
+            {visibleSpvs.map((spv, i) => (
+              <div
+                key={spv.id}
+                className={`reveal reveal-delay-${Math.min(i + 1, 5)}`}
+              >
+                <SPVCard spv={spv} />
+              </div>
             ))}
           </div>
         )}

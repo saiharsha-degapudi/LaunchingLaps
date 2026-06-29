@@ -90,13 +90,18 @@ function StatCard({ label, value, icon, color = 'text-gold-400' }) {
 
 // ── Ad Editor ────────────────────────────────────────────────────────────────
 function AdEditor({ ad, onSave, onCancel }) {
-  const [form, setForm] = useState({ ...ad })
+  const [form, setForm] = useState({
+    active: true,
+    audience: 'all',
+    placement: 'carousel',
+    ...ad,
+  })
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
   return (
     <div className="bg-white border border-brand-100 rounded-2xl p-6 shadow-sm">
-      <h3 className="text-lg font-black text-gray-900 mb-4">Edit Ad #{ad.id}</h3>
+      <h3 className="text-lg font-black text-gray-900 mb-4">{ad.id ? `Edit Ad #${ad.id}` : 'New Ad'}</h3>
 
       {/* Preview */}
       <div className="relative w-full h-40 rounded-xl overflow-hidden mb-5 bg-black">
@@ -121,10 +126,10 @@ function AdEditor({ ad, onSave, onCancel }) {
           <div key={f.key} className={f.key === 'sub' || f.key === 'image' ? 'col-span-2' : ''}>
             <label className="block text-xs font-semibold text-gray-600 mb-1">{f.label}</label>
             {f.key === 'sub' ? (
-              <textarea rows={2} value={form[f.key]} onChange={e => set(f.key, e.target.value)}
+              <textarea rows={2} value={form[f.key] || ''} onChange={e => set(f.key, e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none" />
             ) : (
-              <input value={form[f.key]} onChange={e => set(f.key, e.target.value)}
+              <input value={form[f.key] || ''} onChange={e => set(f.key, e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400" />
             )}
           </div>
@@ -132,16 +137,50 @@ function AdEditor({ ad, onSave, onCancel }) {
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Accent Color</label>
           <div className="flex items-center gap-2">
-            <input type="color" value={form.accentColor} onChange={e => set('accentColor', e.target.value)} className="w-10 h-10 rounded cursor-pointer border border-gray-200" />
-            <input value={form.accentColor} onChange={e => set('accentColor', e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none" />
+            <input type="color" value={form.accentColor || '#ffffff'} onChange={e => set('accentColor', e.target.value)} className="w-10 h-10 rounded cursor-pointer border border-gray-200" />
+            <input value={form.accentColor || ''} onChange={e => set('accentColor', e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none" />
           </div>
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">CTA Button Color</label>
           <div className="flex items-center gap-2">
-            <input type="color" value={form.ctaBg} onChange={e => set('ctaBg', e.target.value)} className="w-10 h-10 rounded cursor-pointer border border-gray-200" />
-            <input value={form.ctaBg} onChange={e => set('ctaBg', e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none" />
+            <input type="color" value={form.ctaBg || '#000000'} onChange={e => set('ctaBg', e.target.value)} className="w-10 h-10 rounded cursor-pointer border border-gray-200" />
+            <input value={form.ctaBg || ''} onChange={e => set('ctaBg', e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none" />
           </div>
+        </div>
+
+        {/* Targeting & Placement */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Target Audience</label>
+          <select value={form.audience || 'all'} onChange={e => set('audience', e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none">
+            <option value="all">All Users</option>
+            <option value="entrepreneur">Entrepreneurs Only</option>
+            <option value="investor">Investors Only</option>
+            <option value="guest">Guests (Not Logged In)</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Placement</label>
+          <select value={form.placement || 'carousel'} onChange={e => set('placement', e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none">
+            <option value="carousel">Landing Carousel</option>
+            <option value="sidebar">Sidebar Banner</option>
+            <option value="dashboard">Dashboard Banner</option>
+            <option value="pitches">Pitches List Banner</option>
+          </select>
+        </div>
+
+        {/* Active toggle */}
+        <div className="col-span-2 flex items-center justify-between border border-gray-100 rounded-lg px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-800">Ad Status</p>
+            <p className="text-xs text-gray-400">Inactive ads are hidden from users</p>
+          </div>
+          <button type="button" onClick={() => set('active', !form.active)}
+            className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${form.active ? 'bg-green-500' : 'bg-gray-200'}`}>
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${form.active ? 'left-5.5' : 'left-0.5'}`} />
+          </button>
         </div>
       </div>
 
@@ -169,12 +208,26 @@ function AdsManager() {
   const [saved, setSaved] = useState(false)
 
   const saveAd = (updated) => {
-    const next = ads.map(a => a.id === updated.id ? updated : a)
+    const isNew = !updated.id
+    const newAd = isNew ? { ...updated, id: Date.now(), views: 0, clicks: 0 } : updated
+    const next = isNew ? [...ads, newAd] : ads.map(a => a.id === updated.id ? updated : a)
     setAds(next)
     localStorage.setItem('ll_admin_ads', JSON.stringify(next))
     setEditing(null)
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
+  }
+
+  const toggleActive = (id) => {
+    const next = ads.map(a => a.id === id ? { ...a, active: !(a.active ?? true) } : a)
+    setAds(next)
+    localStorage.setItem('ll_admin_ads', JSON.stringify(next))
+  }
+
+  const deleteAd = (id) => {
+    const next = ads.filter(a => a.id !== id)
+    setAds(next)
+    localStorage.setItem('ll_admin_ads', JSON.stringify(next))
   }
 
   const resetAds = () => {
@@ -185,19 +238,45 @@ function AdsManager() {
     setTimeout(() => setSaved(false), 2500)
   }
 
+  const PLACEMENT_LABELS = { carousel: 'Landing Carousel', sidebar: 'Sidebar', dashboard: 'Dashboard', pitches: 'Pitches List' }
+  const AUDIENCE_LABELS = { all: 'All Users', entrepreneur: 'Entrepreneurs', investor: 'Investors', guest: 'Guests' }
+
+  // Summary stats
+  const totalViews = ads.reduce((s, a) => s + (a.views || 0), 0)
+  const totalClicks = ads.reduce((s, a) => s + (a.clicks || 0), 0)
+  const activeCount = ads.filter(a => a.active !== false).length
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-xl font-black text-gray-900">Carousel Ads Manager</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Edit or replace the 5 scrolling ads shown on the Landing page</p>
+          <h2 className="text-xl font-black text-gray-900">Marketing & Ads Manager</h2>
+          <p className="text-sm text-gray-500 mt-0.5">Create and manage banners across all platform placements</p>
         </div>
         <div className="flex items-center gap-3">
           {saved && <span className="text-green-600 text-sm font-semibold">✓ Saved!</span>}
+          <button onClick={() => setEditing({ brand: '', tag: '', headline: '', sub: '', cta: 'Learn More', ctaLink: '/', image: '', accentColor: '#2563eb', ctaBg: '#2563eb', audience: 'all', placement: 'carousel', active: true })}
+            className="px-4 py-2 bg-brand-800 text-white text-sm font-bold rounded-lg hover:bg-brand-700 transition-all">
+            + New Ad
+          </button>
           <button onClick={resetAds} className="px-4 py-2 border border-gray-200 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all">
             Reset to Default
           </button>
         </div>
+      </div>
+
+      {/* Summary stats */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        {[
+          { label: 'Active Ads', value: activeCount, color: 'text-green-600' },
+          { label: 'Total Views', value: totalViews.toLocaleString(), color: 'text-blue-600' },
+          { label: 'Total Clicks', value: totalClicks.toLocaleString(), color: 'text-orange-500' },
+        ].map(s => (
+          <div key={s.label} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm text-center">
+            <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
+            <div className="text-gray-500 text-xs mt-1">{s.label}</div>
+          </div>
+        ))}
       </div>
 
       {editing ? (
@@ -205,28 +284,53 @@ function AdsManager() {
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {ads.map((ad, i) => (
-            <div key={ad.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm flex">
+            <div key={ad.id} className={`bg-white border rounded-xl overflow-hidden shadow-sm flex ${ad.active === false ? 'opacity-50 border-gray-100' : 'border-gray-100'}`}>
               {/* Thumbnail */}
               <div className="relative w-48 h-28 flex-shrink-0 bg-black">
-                <img src={ad.image} alt="" className="w-full h-full object-cover opacity-70" />
+                {ad.image ? (
+                  <img src={ad.image} alt="" className="w-full h-full object-cover opacity-70" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                    <span className="text-gray-500 text-xs">No image</span>
+                  </div>
+                )}
                 <div className="absolute top-2 left-2 bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded">
-                  Slide {i + 1}
+                  #{i + 1}
+                </div>
+                <div className={`absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded ${ad.active === false ? 'bg-red-500/80 text-white' : 'bg-green-500/80 text-white'}`}>
+                  {ad.active === false ? 'Off' : 'Live'}
                 </div>
               </div>
               {/* Info */}
-              <div className="flex-1 p-4 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-black tracking-widest uppercase mb-1" style={{ color: ad.accentColor }}>{ad.brand}</p>
-                  <p className="text-sm font-bold text-gray-900 leading-snug">{ad.headline}</p>
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-1">{ad.sub}</p>
-                  <span className="inline-block mt-2 px-3 py-0.5 rounded text-xs font-bold text-white" style={{ backgroundColor: ad.ctaBg }}>
-                    {ad.cta}
-                  </span>
+              <div className="flex-1 p-4 flex items-center justify-between min-w-0">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-black tracking-widest uppercase mb-1 truncate" style={{ color: ad.accentColor }}>{ad.brand}</p>
+                  <p className="text-sm font-bold text-gray-900 leading-snug truncate">{ad.headline}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{ad.sub}</p>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600">
+                      {PLACEMENT_LABELS[ad.placement] || ad.placement || 'Carousel'}
+                    </span>
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-600">
+                      {AUDIENCE_LABELS[ad.audience] || ad.audience || 'All'}
+                    </span>
+                    <span className="text-[10px] text-gray-400">{(ad.views || 0).toLocaleString()} views · {(ad.clicks || 0).toLocaleString()} clicks</span>
+                  </div>
                 </div>
-                <button onClick={() => setEditing(ad)}
-                  className="ml-4 px-4 py-2 bg-brand-800 hover:bg-brand-700 text-white text-sm font-bold rounded-lg transition-all flex-shrink-0">
-                  ✏️ Edit
-                </button>
+                <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                  <button onClick={() => toggleActive(ad.id)}
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${ad.active === false ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-red-200 text-red-600 hover:bg-red-50'}`}>
+                    {ad.active === false ? 'Activate' : 'Pause'}
+                  </button>
+                  <button onClick={() => setEditing(ad)}
+                    className="px-3 py-1.5 bg-brand-800 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-all">
+                    Edit
+                  </button>
+                  <button onClick={() => deleteAd(ad.id)}
+                    className="px-2 py-1.5 border border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200 text-xs rounded-lg transition-all">
+                    ✕
+                  </button>
+                </div>
               </div>
             </div>
           ))}
